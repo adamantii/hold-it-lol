@@ -534,6 +534,7 @@ function onload(options) {
         colorTag = '[#/r]';
       } else if (crossExam) {
         colorTag = '[#/g]';
+        text = text.replaceAll(/\[#.*?\]/g, '');
       }
       if (colorTag) {
         text = colorTag + text + '[/#]';
@@ -653,10 +654,10 @@ function onload(options) {
           observer.disconnect();
         }
       }
-    }).observe(document.querySelector('div.col-sm-3.col-2 div.icon-character'), {childList: true});
+    }).observe(document.querySelector('div.col-sm-3.col-2 dmiv.icon-character'), {childList: true});
     
     handleArrow = function(arrow) {
-      if (testimonyLocked && auto) {
+      if (testimonyMode && testimonyLocked && auto) {
         if (arrow == '>') nextStatement();
         else if (arrow == '<') prevStatement();
       }
@@ -797,7 +798,8 @@ function onload(options) {
         dualEffectMode = false;
       });
       
-      menuButtonDual.addEventListener('mouseenter', function() {
+      const menuButtonDualEvent = options['menu-hover'] ? 'mouseenter' : 'click';
+      menuButtonDual.addEventListener(menuButtonDualEvent, function() {
         menuButtonFlash.click();
         listener(menuButtonDual, TEXT_EFFECT_DUAL_TITLE, TEXT_EFFECT_DUAL_DESCRIPTION);
         dualEffectMode = true;
