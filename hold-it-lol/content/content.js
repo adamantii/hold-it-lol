@@ -654,7 +654,7 @@ function onload(options) {
           observer.disconnect();
         }
       }
-    }).observe(document.querySelector('div.col-sm-3.col-2 dmiv.icon-character'), {childList: true});
+    }).observe(document.querySelector('div.col-sm-3.col-2 div.icon-character'), {childList: true});
     
     handleArrow = function(arrow) {
       if (testimonyMode && testimonyLocked && auto) {
@@ -798,12 +798,19 @@ function onload(options) {
         dualEffectMode = false;
       });
       
-      const menuButtonDualEvent = options['menu-hover'] ? 'mouseenter' : 'click';
-      menuButtonDual.addEventListener(menuButtonDualEvent, function() {
-        menuButtonFlash.click();
-        listener(menuButtonDual, TEXT_EFFECT_DUAL_TITLE, TEXT_EFFECT_DUAL_DESCRIPTION);
-        dualEffectMode = true;
-      });
+      if (options['menu-hover']) {
+          menuButtonDual.addEventListener('mouseenter', function() {
+            menuButtonFlash.click();
+            listener(menuButtonDual, TEXT_EFFECT_DUAL_TITLE, TEXT_EFFECT_DUAL_DESCRIPTION);
+            dualEffectMode = true;
+          });
+      } else {
+        menuButtonDual.addEventListener('click', function() {
+          menuButtonFlash.click();
+          listener(menuButtonDual, TEXT_EFFECT_DUAL_TITLE, TEXT_EFFECT_DUAL_DESCRIPTION);
+          dualEffectMode = true;
+        });
+      }
       
       menuButtonShake.parentElement.insertBefore(menuButtonDual, menuButtonShake.nextElementSibling);
       
