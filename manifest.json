@@ -1,0 +1,40 @@
+{
+  "name": "holdit.lol",
+  "version": "0.1",
+  "description": "Handy objection.lol Courtroom features",
+  "permissions": [
+    "webNavigation",
+    "storage",
+    "tabs",
+    "*://objection.lol/courtroom/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://objection.lol/courtroom/*"],
+      "js": ["content/content.js"],
+      "css": ["content/evidence.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "32": "assets/icon32.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "icons": {
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "manifest_version": 2
+}
