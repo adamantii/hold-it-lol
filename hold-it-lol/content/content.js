@@ -262,7 +262,7 @@ function onload(options) {
 
 
 
-    let handleArrow;
+    let testimonyFuncs = {};
     if (options['testimony-mode']) {
         const buttonCSS = 'flex: 1 1 auto;background-color: #552a2e;padding: 0 8px;font-size: small;';
         const buttonWidth = '130.75';
@@ -656,10 +656,17 @@ function onload(options) {
             }
         }).observe(document.querySelector('div.col-sm-3.col-2 div.icon-character'), { childList: true });
 
-        handleArrow = function (arrow) {
+        testimonyFuncs.arrow = function(arrow) {
             if (testimonyMode && testimonyLocked && auto) {
                 if (arrow == '>') nextStatement();
                 else if (arrow == '<') prevStatement();
+            }
+        }
+        testimonyFuncs.index = function(statement) {
+            if (testimonyMode && testimonyLocked && auto) {
+                const statementI = statement - 1;
+                if (statementI < 0 || statementI >= statements.length) return;
+                toStatement(statementI);
             }
         }
     }
@@ -1112,8 +1119,9 @@ function onload(options) {
         }
 
         if (options['testimony-mode']) {
-            if (testRegex(messageText, '[> ]*')) handleArrow('>');
-            else if (testRegex(messageText, '[< ]*')) handleArrow('<');
+            if (testRegex(messageText, '[> ]*') && messageText.indexOf('>') !== -1) testimonyFuncs.arrow('>');
+            else if (testRegex(messageText, '[< ]*') && messageText.indexOf('<') !== -1) testimonyFuncs.arrow('<');
+            else if (testRegex(messageText, '<[0-9]*?>')) testimonyFuncs.index(Number(messageText.slice(1, -1)));
         }
 
         if (options['chat-fix']) {
