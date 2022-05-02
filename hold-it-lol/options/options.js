@@ -39,39 +39,6 @@ const tabs = [
     ],
   },
 ];
-/*
-const tabs = [
-  {
-    title: 'Simple background features',
-    items: [
-      {key: '', title: '', description: '', preview: 'previews/placeholder.png'},
-      {key: 'auto-record', title: 'Auto-recording', description: 'Automatically record all courtrooms.', preview: 'previews/placeholder.png'},
-      {key: 'extra-shortcuts', title: 'Keyboard Shortcuts', description: 'Several extra keyboard shortcuts for efficiency.', preview: 'previews/placeholder.png'},
-      {key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close menus after you\'ve used them.<br>(Hold "SHIFT" to suppress)', preview: 'previews/placeholder.png'},
-      {key: 'quick-fades', title: 'Quicker menu animations', description: 'Hurries up animations to open menus quicker.', preview: 'previews/placeholder.png'},
-    ],
-  },
-  {
-    title: 'Medium features',
-    items: [
-      {key: 'chat-moderation', title: 'Chat moderation', description: 'Mute and ban buttons directly in chat.', preview: 'previews/placeholder.png'},
-      {key: 'mute-character', title: 'Mute only character', description: 'Someone\'s character is laggy or unpleasant? Hide just the character, while still seeing their messages.', preview: 'previews/placeholder.png'},
-      {key: 'menu-hover', title: 'Open menus by hovering', description: 'Open formatting menus by hovering over them as opposed to clicking.', preview: 'previews/placeholder.png'},
-      {key: 'dual-button', title: 'Dual effect button', description: 'Insert both Flash and Shake at the same time.', preview: 'previews/placeholder.png'},
-      {key: 'comma-pause', title: 'Quickly typing pauses', description: 'Type , again after a , (or other punctuation marks) to add delays.<br>(Typing more , increases the delay.)', preview: 'previews/placeholder.png'},
-      {key: 'ctrl-effects', title: 'Effect hotkeys', description: 'Quickly add the Flash and Shake tags by pressing CTRL + 1, CTRL + 2, or CTRL + 3.', preview: 'previews/placeholder.png'},
-      {key: 'sound-insert', title: 'Sounds and music: Quick inserting', description: 'Add sounds just by clicking on them in the list (without pressing "insert tag")<br>(Hold "SHIFT" to suppress)', preview: 'previews/placeholder.png'},
-    ],
-  },
-  {
-    title: 'Roleplay features',
-    items: [
-      {key: 'testimony-mode', title: 'Testimony mode', description: 'A helpful witness testimony player for roleplay.', preview: 'previews/placeholder.png'},
-      {key: 'bulk-evidence', title: 'Add evidence from table (Beta)', description: 'Automatically add lots of evidence via a copy-pasted table from a document.<br>(Works with tables where each evidence takes up a row)', preview: 'previews/placeholder.png'},
-    ],
-  },
-];
-*/
 
 function optionSet(key, value) {
   chrome.storage.local.get({'options': {}}, function(result) {
