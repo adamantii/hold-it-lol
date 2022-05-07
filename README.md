@@ -1,5 +1,5 @@
 # hold-it-lol
-Various quality of life [https://objection.lol/courtroom](objection.lol) courtroom features & tweaks, ranging from tiny UI changes to roleplay testimony UIs.
+Quality of life [https://objection.lol/courtroom](objection.lol) courtroom features & tweaks, ranging from tiny UI changes to roleplay testimony UIs.
 
 Note: the extension is still unfinished and in beta - several assets and features are temporarily replaced by placeholders
 
