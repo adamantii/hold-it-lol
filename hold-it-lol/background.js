@@ -14,7 +14,6 @@
 });*/
 
 chrome.webNavigation.onHistoryStateUpdated.addListener(e => {
-  console.log('trole');
   chrome.tabs.sendMessage( e.tabId, {action: "loaded"} );
 }, {url: [{urlMatches: ".*objection\\.lol\\/courtroom\\/..*"}]});
 
