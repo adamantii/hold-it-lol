@@ -1,6 +1,6 @@
 {
   "name": "holdit.lol (beta)",
-  "version": "0.4",
+  "version": "0.5",
   "description": "Handy objection.lol Courtroom features",
   "permissions": [
     "webNavigation",
@@ -12,8 +12,8 @@
     {
       "matches": ["https://objection.lol/courtroom/*"],
       "js": ["content/content.js"],
-      "css": ["content/evidence.css"],
-      "run_at": "document_end"
+      "css": ["content/style.css"],
+      "run_at": "document_start"
     }
   ],
   "background": {

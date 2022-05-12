@@ -77,7 +77,7 @@ function getInputContent() {
 
 function makeIcon(iconClass, fontPx, styleText) {
     const icon = document.createElement('i');
-    icon.className = 'helper-themed v-icon notranslate mdi ' + theme;
+    icon.className = 'hil-themed v-icon notranslate mdi ' + theme;
     icon.classList.add(iconClass);
     icon.style.cssText = 'font-size: ' + fontPx + 'px;'
     if (styleText) icon.style.cssText += styleText;
@@ -86,7 +86,7 @@ function makeIcon(iconClass, fontPx, styleText) {
 
 function makeButton(listener, text, classText, styleText) {
     const button = document.createElement('button');
-    button.className = 'v-btn v-btn--has-bg v-size--default helper ' + theme;
+    button.className = 'v-btn v-btn--has-bg v-size--default hil ' + theme;
     if (classText) button.className += ' ' + classText;
     button.style.cssText = 'height: 100%; font-weight: normal; text-transform: none; text-overflow: clip;' + DEFAULT_TRANSITION;
     if (styleText) button.style.cssText += styleText;
@@ -160,13 +160,13 @@ function onload(options) {
             theme = 'theme--light';
         }
 
-        const elems = document.querySelectorAll('.helper-themed');
+        const elems = document.querySelectorAll('.hil-themed');
         for (let elem of elems) {
             elem.classList.remove('theme--dark');
             elem.classList.remove('theme--light');
             elem.classList.add(theme);
         }
-        for (let elem of document.querySelectorAll('.helper-themed-text')) {
+        for (let elem of document.querySelectorAll('.hil-themed-text')) {
             if (theme == 'theme--dark') {
                 elem.style.color = '#fff';
             } else {
@@ -271,13 +271,13 @@ function onload(options) {
         let testimonyMode = false;
 
         const testimonyArea = document.createElement('textarea');
-        testimonyArea.className = 'helper-themed-text';
+        testimonyArea.className = 'hil-themed-text';
         testimonyArea.style.cssText = 'display: none; width: 100%; height: 600px; resize: none; overflow: auto; padding: 5px; margin: 0; border: #552a2e 1px solid;';
         testimonyArea.placeholder = "Paste your testimony here.\nSeparate statements with line breaks.";
         textArea.parentElement.appendChild(testimonyArea);
 
         const testimonyDiv = document.createElement('div');
-        testimonyDiv.className = 'helper-themed-text';
+        testimonyDiv.className = 'hil-themed-text';
         testimonyDiv.style.cssText = 'display: none; width: 100%; height: 600px; overflow: auto; padding: 5px 0px; margin: 0; border: #7f3e44 1px solid;';
         textArea.parentElement.appendChild(testimonyDiv);
 
@@ -340,7 +340,7 @@ function onload(options) {
                     div.lastElementChild.innerText = statement;
 
                     const pose = document.createElement('div');
-                    pose.className = 'helper pose-message v-messages v-messages__message ' + theme;
+                    pose.className = 'hil pose-message v-messages v-messages__message ' + theme;
                     pose.style.cssText = 'position: absolute;';
                     if (statement in poseElems) {
                         let poseName = poseNames[statement];
@@ -443,7 +443,7 @@ function onload(options) {
 
 
         const musicInput = document.createElement('input');
-        musicInput.className = 'helper music-input v-size--default v-sheet--outlined helper-themed-text ' + theme;
+        musicInput.className = 'hil music-input v-size--default v-sheet--outlined hil-themed-text ' + theme;
         musicInput.style.cssText = 'display: none; opacity: 0%; position: absolute; top: calc(100% + 10px); height: 100%; width: ' + buttonWidth + 'px; text-align: center; border-radius: 4px; font-size: 0.875rem; overflow: hidden;' + DEFAULT_TRANSITION;
         musicInput.placeholder = 'Witness music tag';
 
@@ -896,21 +896,21 @@ function onload(options) {
         const evidenceList = buttonRow.parentElement.parentElement.nextElementSibling.nextElementSibling;
 
         const tabButton = document.createElement('div');
-        tabButton.className = 'evidence-button v-btn v-btn--plain theme--dark v-size--small primary--text';
+        tabButton.className = 'hil-evidence-button v-btn v-btn--plain theme--dark v-size--small primary--text';
         tabButton.style.cssText = 'margin-left: 32px; cursor: pointer';
         const tabSpan = document.createElement('span');
         tabSpan.className = 'v-btn__content';
         tabSpan.textContent = 'Import From Table';
         const tabDiv = document.createElement('div');
         tabDiv.style.cssText = 'z-index: 1; position: fixed; width: 400px; background-color: #121212; transition: opacity 0.2s; opacity: 0; display: none; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.8);';
-        tabDiv.className = 'evidence-tab';
+        tabDiv.className = 'hil-evidence-tab';
         tabButton.appendChild(tabSpan);
         buttonRow.appendChild(tabButton);
         buttonRow.appendChild(tabDiv);
 
         let tabOpen = false;
         document.addEventListener('click', function () {
-            if (!tabOpen && document.querySelector('.evidence-button:hover')) {
+            if (!tabOpen && document.querySelector('.hil-evidence-button:hover')) {
                 tabOpen = true;
                 tabDiv.style.display = 'block';
                 setTimeout(() => tabDiv.style.opacity = '1', 0);
@@ -919,16 +919,16 @@ function onload(options) {
                 tabDiv.style.left = (box.left + box.width / 2 - tabDiv.clientWidth / 2) + 'px';
                 return;
             }
-            if (document.querySelector('.evidence-tab:hover')) return;
+            if (document.querySelector('.hil-evidence-tab:hover')) return;
             tabOpen = false;
             tabDiv.style.opacity = '0';
             setTimeout(() => tabDiv.style.display = 'none', 200);
         });
 
 
-        tabDiv.innerHTML = '<div class="evidence-title">Paste a table here</div><div id="evidence-area" contenteditable="true"></div><div class="evidence-submit v-btn theme--dark">Submit</div><div class="evidence-error error--text"></div>';
-        const pasteArea = tabDiv.querySelector('#evidence-area');
-        const error = tabDiv.querySelector('.evidence-error');
+        tabDiv.innerHTML = '<div class="hil-evidence-title">Paste a table here</div><div id="hil-evidence-area" contenteditable="true"></div><div class="hil-evidence-submit v-btn theme--dark">Submit</div><div class="hil-evidence-error error--text"></div>';
+        const pasteArea = tabDiv.querySelector('#hil-evidence-area');
+        const error = tabDiv.querySelector('.hil-evidence-error');
 
         pasteArea.addEventListener("input", function () {
             for (let table of pasteArea.querySelectorAll(':not(:scope) > table')) {
@@ -950,9 +950,9 @@ function onload(options) {
                 if (node.nodeType == 1 && node.nodeName == 'TABLE') continue;
                 node.remove();
             }
-            for (let elem of pasteArea.querySelectorAll('.evd-warning')) elem.classList.remove('evd-warning');
-            for (let elem of pasteArea.querySelectorAll('.evd-error')) elem.classList.remove('evd-error');
-            for (let elem of pasteArea.querySelectorAll('.evd-row')) elem.classList.remove('evd-row');
+            for (let elem of pasteArea.querySelectorAll('.hil-evd-warning')) elem.classList.remove('hil-evd-warning');
+            for (let elem of pasteArea.querySelectorAll('.hil-evd-error')) elem.classList.remove('hil-evd-error');
+            for (let elem of pasteArea.querySelectorAll('.hil-evd-row')) elem.classList.remove('hil-evd-row');
             error.textContent = '';
         });
 
@@ -990,7 +990,7 @@ function onload(options) {
         evidenceButtonObserver.observe(evidenceButton, { attributes: true, attributeFilter: ['class'] });
 
 
-        const button = tabDiv.querySelector('.evidence-submit');
+        const button = tabDiv.querySelector('.hil-evidence-submit');
         button.addEventListener('click', function () {
 
             const tableCellContents = [];
@@ -1002,7 +1002,7 @@ function onload(options) {
                 for (let i = 0; i < rows.length; i++) {
                     const anchorRow = rows[i];
                     if (anchorRow.childElementCount < 2 || anchorRow.querySelector('img') == null) {
-                        anchorRow.classList.add('evd-warning');
+                        anchorRow.classList.add('hil-evd-warning');
                         continue;
                     };
 
@@ -1010,7 +1010,7 @@ function onload(options) {
                     for (let cell of anchorRow.children) {
                         if (cell.rowSpan > maxRowSpan) maxRowSpan = cell.rowSpan;
                     }
-                    anchorRow.classList.add('evd-row');
+                    anchorRow.classList.add('hil-evd-row');
 
 
                     const contents = {};
@@ -1050,12 +1050,12 @@ function onload(options) {
                 cellContents.descIndex = Number(indexLengths[2][0]);
 
 
-                const names = table.querySelectorAll(':scope > .evd-row > :nth-child(' + (cellContents.nameIndex + 1) + ')');
+                const names = table.querySelectorAll(':scope > .hil-evd-row > :nth-child(' + (cellContents.nameIndex + 1) + ')');
                 for (let i = 0; i < names.length; i++) {
                     const nameElem = names[i];
                     const text = nameElem.textContent;
                     if (text.length > EVIDENCE_MAX_LENGTH_NAME) {
-                        nameElem.classList.add('evd-error');
+                        nameElem.classList.add('hil-evd-error');
                         nameElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         error.textContent = 'Name on row ' + i + " can\'t be longer than " + EVIDENCE_MAX_LENGTH_NAME + '!';
                         return;
@@ -1204,9 +1204,4 @@ chrome.runtime.onMessage.addListener(data => {
     if (data.action == "loaded") {
         tryMain();
     }
-    /*if (data.action == "add-evidence-list") {
-      const firstTuple = data.tuples.shift();
-      evidenceBacklog.push(...data.tuples);
-      addEvidence(...firstTuple);
-    }*/
 });

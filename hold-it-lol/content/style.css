@@ -1,23 +1,23 @@
-.evidence-title {
+.hil-evidence-title {
   margin: 10px 0;
   text-align: center;
   width: 100%;
   font-family: roboto;
   font-size: 16px;
 }
-.evidence-submit {
+.hil-evidence-submit {
   width: 100%;
   height: 40px;
   font-size: 18px;
   font-family: roboto;
   cursor: pointer;
 }
-.evidence-error {
+.hil-evidence-error {
   text-align: center;
   margin: 10px 0;
 }
 
-#evidence-area {
+#hil-evidence-area {
   height: 400px;
   margin-bottom: 10px;
   padding: 5px;
@@ -26,18 +26,18 @@
   border: solid rgba(255, 255, 255, 0.1) thin;
 }
 
-#evidence-area .evd-error {
+#hil-evidence-area .hil-evd-error {
   background-color: #ff525280 !important;
 }
-#evidence-area .evd-warning {
+#hil-evidence-area .hil-evd-warning {
   background-color: #ff8e0080 !important;
 }
 
-#evidence-area * {
+#hil-evidence-area * {
   font-family: sans-serif !important;
   color: #fff !important;
 }
-#evidence-area table {
+#hil-evidence-area table {
   border: none !important;
   border-collapse: collapse !important;
 }
@@ -46,8 +46,4 @@
   background-color: transparent !important;
   min-width: 20px;
   min-height: 20px;
-}
-
-body.hl-quick-fades .v-menu-transition-enter-active, body.hl-quick-fades .v-menu-transition-leave-active {
-  transition: all .05s cubic-bezier(.25,.8,.25,1) !important;
 }
