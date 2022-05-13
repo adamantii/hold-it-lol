@@ -1,23 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap');
 
 :root {
-  color-scheme: dark;
-  --color-primary: #2096f3;
-  --color-primary-transparent: #2196f380;
-  --color-secondary: #1d4d72;
-  --color-bg-primary: #121212;
-  --color-bg-secondary: #1e1e1e;
-  --color-gray: #424242;
-  --color-error: #ff5252;
-  --transition-duration: .2s;
-  --switch-height: 24px;
-  --switch-outline: 2;
-  --header-height: 64px;
-  --main-width: 800px;
-  --row-height: 80px;
-  --row-padding-x: 30px;
-  --row-padding-y: 8px;
-  --switch-use-radius: 25px;
+    color-scheme: dark;
+    --color-primary: #2096f3;
+    --color-primary-transparent: #2196f380;
+    --color-secondary: #316195;
+    --color-bg-primary: #121212;
+    --color-bg-secondary: #1e1e1e;
+    --color-gray: #3D3D3D;
+    --color-error: #ff5252;
+    --switch-color-off-primary: #fff;
+    --transition-duration: .2s;
+    --header-height: 64px;
+    --main-width: 800px;
+    --row-height: 80px;
+    --row-padding-x: 30px;
+    --row-padding-y: 8px;
 }
 
 html {
@@ -173,83 +171,4 @@ body {
   overflow: hidden;
   max-height: 0;
   transition: max-height .3s ease-out;
-}
-
-.toggle {
-  position: relative;
-  display: inline-block;
-  left: calc(var(--switch-use-radius) / 2);
-  width: calc(var(--switch-height) * 2 + var(--switch-use-radius));
-  height: calc(var(--switch-height) * 1.5 + var(--switch-use-radius));
-  margin-left: auto;
-}
-
-.toggle input { 
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.switch {
-  position: absolute;
-  top: calc(50% - var(--switch-height) / 3);
-  left: calc(var(--switch-use-radius) / 2);
-  right: 0;
-  bottom: 0;
-  width: calc(var(--switch-height) * 2);
-  height: calc(var(--switch-height) / 1.5);
-  background-color: var(--color-gray);
-  -webkit-transition: var(--transition-duration);
-  transition: var(--transition-duration);
-  border-radius: var(--switch-height);
-}
-
-.handle {
-  position: absolute;
-  content: "";
-  height: var(--switch-height);
-  width: var(--switch-height);
-  margin: auto 0;
-  top: 0;
-  left: calc(var(--switch-use-radius) / 2);
-  bottom: 0;
-  background-color: white;
-  -webkit-transition: var(--transition-duration);
-  transition: var(--transition-duration);
-  border-radius: 50%;
-}
-
-.toggle:hover .switch + .handle:before {
-  opacity: 0.15;
-}
-.toggle:hover {
-  cursor: pointer;
-}
-
-input + .switch + .handle:before {
-  position: absolute;
-  content: "";
-  --radius: calc(var(--switch-height) * var(--switch-outline));
-  height: var(--radius);
-  width: var(--radius);
-  --diff: calc(var(--radius) - var(--switch-height));
-  top: calc(var(--diff) / -2);
-  left: calc(var(--diff) / -2);
-  border-radius: 50%;
-  background-color: inherit;
-  opacity: 0;
-  pointer-events: none;
-  -webkit-transition: var(--transition-duration);
-  transition: opacity var(--transition-duration);
-}
-
-input:checked + .switch {
-  background-color: var(--color-secondary);
-}
-
-input:checked + .switch + .handle {
-  -webkit-transform: translateX(var(--switch-height));
-  -ms-transform: translateX(var(--switch-height));
-  transform: translateX(var(--switch-height));
-  background-color: var(--color-primary);
 }

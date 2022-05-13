@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap');
+
+:root {
+    --switch-color-on-primary: #2096f3;
+    --switch-color-on-secondary: #1d4d72;
+    --switch-color-off-primary: #bdbdbd;
+    --switch-color-off-secondary: #3D3D3D;
+    --transition-duration: .2s;
+    --switch-height: 24px;
+    --switch-outline: 2;
+    --switch-use-radius: 25px;
+}
+
+.toggle {
+    position: relative;
+    display: inline-block;
+    left: calc(var(--switch-use-radius) / 2);
+    width: calc(var(--switch-height) * 2 + var(--switch-use-radius));
+    height: calc(var(--switch-height) * 1.5 + var(--switch-use-radius));
+    margin-left: auto;
+}
+  
+.toggle input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+  
+.switch {
+    position: absolute;
+    top: calc(50% - var(--switch-height) / 3);
+    left: calc(var(--switch-use-radius) / 2);
+    right: 0;
+    bottom: 0;
+    width: calc(var(--switch-height) * 2);
+    height: calc(var(--switch-height) / 1.5);
+    background-color: var(--switch-color-off-secondary);
+    -webkit-transition: var(--transition-duration);
+    transition: var(--transition-duration);
+    border-radius: var(--switch-height);
+}
+  
+.handle {
+    position: absolute;
+    content: "";
+    height: var(--switch-height);
+    width: var(--switch-height);
+    margin: auto 0;
+    top: 0;
+    left: calc(var(--switch-use-radius) / 2);
+    bottom: 0;
+    background-color: var(--switch-color-off-primary);
+    -webkit-transition: var(--transition-duration);
+    transition: var(--transition-duration);
+    border-radius: 50%;
+}
+  
+.toggle:hover .switch + .handle:before {
+    opacity: 0.15;
+}
+.toggle:hover {
+    cursor: pointer;
+}
+  
+input + .switch + .handle:before {
+    position: absolute;
+    content: "";
+    --radius: calc(var(--switch-height) * var(--switch-outline));
+    height: var(--radius);
+    width: var(--radius);
+    --diff: calc(var(--radius) - var(--switch-height));
+    top: calc(var(--diff) / -2);
+    left: calc(var(--diff) / -2);
+    border-radius: 50%;
+    background-color: inherit;
+    opacity: 0;
+    pointer-events: none;
+    -webkit-transition: var(--transition-duration);
+    transition: opacity var(--transition-duration);
+}
+  
+input:checked + .switch {
+    background-color: var(--switch-color-on-secondary);
+}
+  
+input:checked + .switch + .handle {
+    -webkit-transform: translateX(var(--switch-height));
+    -ms-transform: translateX(var(--switch-height));
+    transform: translateX(var(--switch-height));
+    background-color: var(--switch-color-on-primary);
+}
