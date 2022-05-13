@@ -29,12 +29,15 @@ let modifierKeys = {};
 let theme;
 let textArea;
 
+let optionsLoaded;
+let options;
+
 
 function clickOff() { app.click(); }
 
 function testRegex(str, re) {
     const match = str.match(re);
-    return match[0] == match.input;
+    return match !== null && match[0] == match.input;
 }
 
 function httpGetAsync(url) {
@@ -1187,21 +1190,89 @@ function onload(options) {
 
 }
 
+optionsLoaded = new Promise(function(resolve, reject) {
+    chrome.storage.local.get(['options'], function(result) {
+        options = result.options || {};
+        resolve(options);
+    });
+});
+
+
+if (true) {
+    const scriptQueue = [];
+    const scriptSrcs = new Map();
+    function restartQueuedScript() {
+        const script = scriptQueue.shift();
+        let resetNode;
+        if (scriptSrcs.get(script).includes('probe_room')) {
+            resetNode = document.createElement('script');
+            resetNode.textContent = scriptSrcs.get(script).replace(
+                'this.$socket.emit("probe_room',
+                'window.socket=this.$socket;window.dispatchEvent(new CustomEvent("hil_socket"));this.$socket.emit("probe_room',
+            );
+        } else {
+            resetNode = script.cloneNode();
+            resetNode.type = '';
+        }
+        script.parentElement.insertBefore(resetNode, script);
+        script.remove();
+        scriptSrcs.delete(script);
+        
+        if (scriptQueue.length > 0 && scriptQueue[0].dataset.hilIgnore === '1') restartQueuedScript();
+    }
+
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1 && node.tagName == 'MAIN') tryMain();
+                if (node.nodeType === 1 && node.tagName === 'SCRIPT' && node.dataset.hilIgnore !== '1' && node.src && new URL(node.src).host === 'objection.lol') {
+                    const script = node;
+                    script.type = 'javascript/blocked';
+                    scriptQueue.push(script);
+
+                    httpGetAsync(script.src).then(function(response) {
+                        script.dataset.hilIgnore = '1';
+                        scriptSrcs.set(script, response);
+                        if (scriptQueue[0] === script) restartQueuedScript();
+                    })
+                }
+            })
+        })
+    })
+    
+    observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+    })
+
+    window.addEventListener('hil_socket', function() {
+        const script = document.createElement('script');
+        script.src = chrome.runtime.getURL('inject/socket-wrapper.js');
+        script.dataset.hilIgnore = '1';
+        (document.head || document.documentElement).appendChild(script);
+
+        optionsLoaded.then(function(options) {
+            console.log('hi');
+            window.postMessage([
+                'set_options',
+                options
+            ]);
+        });
+    });
+}
+// window.addEventListener('load', tryMain);
+
+// chrome.runtime.onMessage.addListener(data => {
+//     if (data.action == "loaded") {
+//         tryMain();
+//     }
+// });
 
 
 function tryMain() {
     if (document.querySelector('.frameTextarea')) {
-        chrome.storage.local.get(['options'], function (result) {
-            const options = result.options || {};
+        optionsLoaded.then(function(options) {
             onload(options);
-        });
+        })
     }
 }
-
-window.addEventListener('load', tryMain);
-
-chrome.runtime.onMessage.addListener(data => {
-    if (data.action == "loaded") {
-        tryMain();
-    }
-});

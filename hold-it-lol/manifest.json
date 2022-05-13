@@ -12,10 +12,11 @@
     {
       "matches": ["https://objection.lol/courtroom/*"],
       "js": ["content/content.js"],
-      "css": ["content/style.css"],
+      "css": ["toggle-switch.css", "content/style.css"],
       "run_at": "document_start"
     }
   ],
+  "web_accessible_resources": ["inject/socket-wrapper.js"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false
