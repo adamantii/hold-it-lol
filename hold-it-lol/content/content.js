@@ -249,7 +249,7 @@ function onload(options) {
         row2.appendChild(helperToggle);
 
         helperDiv = document.createElement('div');
-        helperDiv.style.cssText = 'display: none; transform: translateY(-10px); opacity: 0%; padding: 0 8px 0px;' + DEFAULT_TRANSITION;
+        helperDiv.style.cssText = 'display: none; transform: translateY(-10px); opacity: 0; padding: 0 8px 0px;' + DEFAULT_TRANSITION;
         row2.appendChild(helperDiv);
 
         helperToggle.addEventListener('click', function () {
@@ -293,22 +293,75 @@ function onload(options) {
     };
 
 
-    function makeRow() {
+    function createRow(parent, transparent = false) {
         const div = document.createElement('div');
         div.className = 'hil-row';
-        helperDiv.appendChild(div);
+        parent.appendChild(div);
         return div;
     }
 
-    const mainRow = makeRow();
+    const TabState = {
+        DEFAULT: {
+            enabled: true,
+            onEnable: function() {
+                tabSeparator.style.removeProperty('display');
+            },
+            onDisable: function() {
+                tabSeparator.style.display = 'block';
+            }
+        },
+        TESTIMONY: {},
+        TN: {},
+    }
+    const tabRow = createRow(helperDiv);
+
+    const tabSeparator = document.createElement('hr');
+    tabSeparator.className = 'hil-row-separator';
+    helperDiv.appendChild(tabSeparator);
+    
+    const contentRow = createRow(helperDiv);
+    contentRow.classList.add('hil-content-row')
+    let tabState = TabState.DEFAULT;
+    function setState(state) {
+        if (tabState.onDisable) tabState.onDisable();
+        if (tabState.contentDiv) {
+            const style = tabState.contentDiv.style;
+            style.opacity = '0';
+            setTimeout(() => style.display = 'none', 150);
+        }
+        if (tabState.tabButton) tabState.tabButton.classList.remove('info');
+        tabState.enabled = false;
+        tabState = state;
+        if (tabState.onEnable) tabState.onEnable();
+        if (tabState.contentDiv) {
+            tabState.contentDiv.style.opacity = '1';
+            tabState.contentDiv.style.removeProperty('display');
+        }
+        if (tabState.tabButton) tabState.tabButton.classList.add('info');
+        tabState.enabled = true;
+    }
+    function createTabRow(state) {
+        const row = createRow(contentRow);
+        row.style.opacity = '0';
+        row.style.display = 'none';
+        state.contentDiv = row;
+        return row;
+    }
+    function createTabButton(state, text) {
+        const button = createButton(function () {
+            if (!state.enabled) setState(state);
+            else setState(TabState.DEFAULT);
+        }, text, '', 'flex: 1 1 auto;max-width: 130.75px;');
+        tabRow.appendChild(button);
+        state.tabButton = button;
+        return button;
+    }
 
 
 
     let testimonyFuncs = {};
     if (options['testimony-mode']) {
-        const buttonWidth = '130.75';
-
-        const testimonyRow = makeRow();
+        const testimonyRow = createTabRow(TabState.TESTIMONY);
         let testimonyMode = false;
 
         const testimonyArea = document.createElement('textarea');
@@ -436,56 +489,36 @@ function onload(options) {
 
 
         const configDiv = document.createElement('div');
-        configDiv.style.cssText = 'display: none;flex: 1 1 auto;opacity: 0%;' + DEFAULT_TRANSITION;
+        configDiv.style.cssText = 'flex: 1 1 auto;' + DEFAULT_TRANSITION;
 
-        const toggleButton = createButton(function () {
-            testimonyMode = !testimonyMode;
-            if (testimonyMode) {
+        TabState.TESTIMONY.onEnable = function() {
+            textArea.style.display = 'none';
 
-                toggleButton.innerText = 'Default Mode';
-                textArea.style.display = 'none';
-                configDiv.style.display = 'flex';
-                musicInput.style.display = 'block';
-                setTimeout(() => {
-                    configDiv.style.opacity = '100%';
-                    musicInput.style.opacity = '100%';
-                }, 1);
-
-                textButton.parentElement.style.display = 'none';
-                lockTestimony.style.display = 'flex';
-                if (testimonyLocked) {
-                    primaryDiv.style.display = 'flex';
-                    testimonyDiv.style.display = 'block';
-                } else {
-                    testimonyArea.style.display = 'block';
-                }
-
+            textButton.parentElement.style.display = 'none';
+            lockTestimony.style.display = 'flex';
+            if (testimonyLocked) {
+                primaryDiv.style.display = 'flex';
+                testimonyDiv.style.display = 'block';
             } else {
-
-                toggleButton.innerText = 'Testimony Mode';
-                testimonyArea.style.display = 'none';
-                testimonyDiv.style.display = 'none';
-                textArea.style.display = 'block';
-                configDiv.style.opacity = '0%';
-                musicInput.style.opacity = '0%';
-                setTimeout(() => {
-                    configDiv.style.display = 'none';
-                    musicInput.style.display = 'none';
-                }, 300);
-
-                textButton.parentElement.style.display = 'block';
-                lockTestimony.style.display = 'none';
-                primaryDiv.style.display = 'none';
-
+                testimonyArea.style.display = 'block';
             }
-        }, 'Testimony Mode', '', 'margin-right:10px;flex: 1 1 auto;max-width: ' + buttonWidth + 'px;');
-        mainRow.appendChild(toggleButton);
+        }
+        TabState.TESTIMONY.onDisable = function() {
+            testimonyArea.style.display = 'none';
+            testimonyDiv.style.display = 'none';
+            textArea.style.display = 'block';
+
+            textButton.parentElement.style.display = 'block';
+            lockTestimony.style.display = 'none';
+            primaryDiv.style.display = 'none';
+        }
+        const toggleButton = createTabButton(TabState.TESTIMONY, 'Testimony Mode');
         testimonyRow.appendChild(configDiv);
 
 
         const musicInput = document.createElement('input');
         musicInput.className = 'hil-themed hil-row-textbox hil-music-input v-size--default v-sheet--outlined hil-themed-text ' + theme;
-        musicInput.style.cssText = 'opacity: 0;width: ' + buttonWidth + 'px;';
+        musicInput.style.cssText = 'width: 130.75px;';
         musicInput.placeholder = 'Witness music tag';
 
         musicInput.addEventListener('click', () => musicInput.setSelectionRange(0, musicInput.value.length));
@@ -715,20 +748,55 @@ function onload(options) {
 
 
     if (options['smart-tn']) {
-        const tnInput = document.createElement('input');
-        tnInput.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-themed-text ' + theme;
-        tnInput.placeholder = 'TN';
-        optionsLoaded.then(function(options) {
-            tnInput.value = options['smart-tn-pattern'] || 'TN';
-        })
-        tnInput.addEventListener('change', function() {
-            optionSet('smart-tn-pattern', tnInput.value)
+        const tnButton = createTabButton(TabState.TN, 'TN animations');
+        const tnRow = createTabRow(TabState.TN);
+        tnRow.classList.add('hil-tab-row-tn')
+        
+        const description = document.createElement('span');
+        description.textContent = 'TN pose name keywords:'
+        description.style.margin = 'auto 10px';
+        description.style.whiteSpace = 'nowrap';
+        tnRow.appendChild(description);
+
+        const patternInputs = document.createElement('div');
+        patternInputs.style.display = 'flex';
+        tnRow.appendChild(patternInputs);
+        function addPatternInput(value = '') {
+            const input = document.createElement('input');
+            input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-themed-text ' + theme;
+            input.placeholder = 'TN';
+            input.value = value;
+            input.addEventListener('click', () => musicInput.setSelectionRange(0, input.value.length));
+            input.addEventListener('change', onPatternsUpdate);
+            patternInputs.appendChild(input);
+            return input;
+        }
+        function onPatternsUpdate() {
+            const patterns = [];
+            const toRemove = [];
+            for (let input of patternInputs.children) {
+                if (input.value === '') {
+                    toRemove.push(input);
+                    continue;
+                }
+                patterns.push(input.value);
+            }
+            toRemove.forEach(elem => elem.remove());
+            addPatternInput('');
+
+            optionSet('smart-tn-pattern', patterns);
             window.postMessage([
                 'set_options',
                 options
             ]);
+        }
+        optionsLoaded.then(function(options) {
+            const patterns = options['smart-tn-patterns'] || ['TN'];
+            for (let pattern of patterns) {
+                addPatternInput(pattern);
+            }
+            addPatternInput('');
         });
-        mainRow.appendChild(tnInput);
     }
 
 

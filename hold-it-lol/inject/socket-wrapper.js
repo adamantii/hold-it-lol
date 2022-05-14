@@ -25,7 +25,7 @@ function main(socketComponent) {
             if (socketStates['no-talk'] || data.text.includes('[##nt]')) data.doNotTalk = true;
             if (socketStates['options']['smart-pre'] && data.poseId === socketStates['prev-pose']) data.poseAnimation = false;
             if (socketStates['options']['smart-tn'] && socketStates['prev-char'] === data.characterId && data.poseId !== socketStates['prev-pose']) {
-                const patterns = (socketStates['options']['smart-tn-pattern'] || 'TN').split('|');
+                const patterns = socketStates['options']['smart-tn-patterns'] || ['TN'];
                 const charPoses = socketComponent.$children.find(component => component.currentCharacter).currentCharacter.poses;
                 const prevPoseName = charPoses.find(pose => pose.id === socketStates['prev-pose']).name;
                 const currentPoseName = charPoses.find(pose => pose.id === data.poseId).name;

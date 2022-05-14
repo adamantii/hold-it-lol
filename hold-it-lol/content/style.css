@@ -5,7 +5,7 @@
     --testimony-color-light: #be747b;
 }
 
-.hil-row {
+div.hil-row {
     position: relative;
     display: flex;
     align-items: stretch;
@@ -13,14 +13,27 @@
     height: 30px;
 }
 
-.hil-row-btn {
+.hil-content-row > div {
+    position: absolute;
+    transition: var(--default-transition);
+}
+
+hr.hil-row-separator {
+    margin-bottom: 10px;
+    opacity: 30%;
+    border-color: #808080;
+    display: none;
+}
+
+button.hil-row-btn {
     height: 100%!important;
     font-weight: normal!important;
     text-transform: none!important;
     text-overflow: clip!important;
+    transition: var(--default-transition);
 }
 
-.hil-row-textbox {
+input.hil-row-textbox {
     display: block;
     height: 100%;
     text-align: center;
@@ -31,12 +44,22 @@
     color: rgb(255, 255, 255);
 }
 
-.hil-music-input {
+input.hil-music-input {
     position: absolute;
     top: calc(100% + 10px);
 }
 
-.hil-testiony-btn {
+.hil-row span {
+    margin-top: auto;
+    margin-bottom: auto;
+    font-weight: 300;
+}
+
+.hil-tab-row-tn input {
+    width: 20%
+}
+
+button.hil-testiony-btn {
     flex: 1 1 auto!important;
     background-color: var(--testimony-color-dark)!important;
     padding: 0 8px!important;
