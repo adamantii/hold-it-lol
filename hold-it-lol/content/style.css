@@ -1,3 +1,59 @@
+:root {
+    --default-transition: .15s cubic-bezier(.25,.8,.5,1);
+    --switch-height: 18px;
+    --testimony-color-dark: #552a2e;
+    --testimony-color-light: #be747b;
+}
+
+.hil-row {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    margin-bottom: 10px;
+    height: 30px;
+}
+
+.hil-row-btn {
+    height: 100%!important;
+    font-weight: normal!important;
+    text-transform: none!important;
+    text-overflow: clip!important;
+}
+
+.hil-row-textbox {
+    display: block;
+    height: 100%;
+    text-align: center;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    overflow: hidden;
+    transition: var(--default-transition);
+    color: rgb(255, 255, 255);
+}
+
+.hil-music-input {
+    position: absolute;
+    top: calc(100% + 10px);
+}
+
+.hil-testiony-btn {
+    flex: 1 1 auto!important;
+    background-color: var(--testimony-color-dark)!important;
+    padding: 0 8px!important;
+    font-size: small!important;
+}
+
+.hil-testiony-btn.theme--light {
+    background-color: var(--testimony-color-light)!important;
+}
+
+.hil-no-talk-toggle label {
+    position: absolute;
+    left: 100%;
+    width: max-content;
+    cursor: pointer;
+}
+
 .hil-evidence-title {
   margin: 10px 0;
   text-align: center;

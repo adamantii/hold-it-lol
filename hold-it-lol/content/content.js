@@ -31,6 +31,7 @@ let textArea;
 
 let optionsLoaded;
 let options;
+// Socket options: testimony-mode, no-talk-toggle, smart-pre, smart-tn, mute-character, now-playing, custom-log
 
 
 function clickOff() { app.click(); }
@@ -78,7 +79,7 @@ function getInputContent() {
     return app.querySelector('.menuable__content__active:not([role="menu"])');
 }
 
-function makeIcon(iconClass, fontPx, styleText) {
+function createIcon(iconClass, fontPx, styleText) {
     const icon = document.createElement('i');
     icon.className = 'hil-themed v-icon notranslate mdi ' + theme;
     icon.classList.add(iconClass);
@@ -87,12 +88,11 @@ function makeIcon(iconClass, fontPx, styleText) {
     return icon;
 }
 
-function makeButton(listener, text, classText, styleText) {
+function createButton(listener, text, classText, styleText) {
     const button = document.createElement('button');
-    button.className = 'v-btn v-btn--has-bg v-size--default hil ' + theme;
+    button.className = 'v-btn v-btn--has-bg v-size--default hil-row-btn hil-themed ' + theme;
     if (classText) button.className += ' ' + classText;
-    button.style.cssText = 'height: 100%; font-weight: normal; text-transform: none; text-overflow: clip;' + DEFAULT_TRANSITION;
-    if (styleText) button.style.cssText += styleText;
+    if (styleText) button.style.cssText = styleText;
     button.innerText = text;
 
     if (listener) button.addEventListener('click', listener);
@@ -111,6 +111,42 @@ function primaryButton(listener, classText, styleText, child) {
     return button;
 }
 
+function createSwitch(onchange) {
+    const label = document.createElement('div');
+    label.className = 'toggle';
+    const input = document.createElement('input');
+    input.setAttribute('type', 'checkbox');
+    input.style.setProperty('display', 'none');
+  
+    label.set = function(val) {
+        if (input.checked == Boolean(val)) return;
+        input.checked = val;
+        onchange(input.checked);
+    }
+  
+    label.addEventListener('mousedown', function(e) {
+        label.set(!input.checked);
+        e.preventDefault();
+    });
+  
+    const span = document.createElement('span');
+    span.className = 'switch';
+    const handle = document.createElement('span');
+    handle.className = 'handle';
+  
+    label.appendChild(input);
+    label.appendChild(span);
+    label.appendChild(handle);
+    return label;
+}
+
+function injectScript(src) {
+    const script = document.createElement('script');
+    script.src = src;
+    script.dataset.hilIgnore = '1';
+    (document.head || document.documentElement).appendChild(script);
+}
+
 function updateSelectionState() {
     currentSelectionState.baseNodeDiv = sel.baseNode && (sel.baseNode.nodeType == 1 ? sel.baseNode : sel.baseNode.parentElement);
     currentSelectionState.baseOffset = sel.baseOffset;
@@ -119,6 +155,7 @@ function updateSelectionState() {
 }
 
 function optionSet(key, value) {
+    options[key] = value;
     chrome.storage.local.get({ 'options': {} }, function (result) {
         const options = result.options;
         options[key] = value;
@@ -207,8 +244,8 @@ function onload(options) {
     let helperDiv;
     let helperVisible = false;
     let toggleHelperDiv;
-    if (showTutorial || options['testimony-mode']) {
-        helperToggle = makeIcon('mdi-dots-horizontal', 28, 'opacity: 70%; margin-top: 15px; right: calc(-100% + 46px); cursor: pointer;');
+    if (showTutorial || options['testimony-mode'] || options['now-playing'] || options['smart-tn']) {
+        helperToggle = createIcon('mdi-dots-horizontal', 28, 'opacity: 70%; margin-top: 15px; right: calc(-100% + 46px); cursor: pointer;');
         row2.appendChild(helperToggle);
 
         helperDiv = document.createElement('div');
@@ -256,21 +293,22 @@ function onload(options) {
     };
 
 
-    function makeRow(cssText = '') {
+    function makeRow() {
         const div = document.createElement('div');
-        div.style.cssText = 'position: relative; display: flex; align-items: stretch; margin-bottom: 20px;' + cssText;
+        div.className = 'hil-row';
         helperDiv.appendChild(div);
         return div;
     }
+
+    const mainRow = makeRow();
 
 
 
     let testimonyFuncs = {};
     if (options['testimony-mode']) {
-        const buttonCSS = 'flex: 1 1 auto;background-color: #552a2e;padding: 0 8px;font-size: small;';
         const buttonWidth = '130.75';
 
-        const testimonyRow = makeRow('height: 30px');
+        const testimonyRow = makeRow();
         let testimonyMode = false;
 
         const testimonyArea = document.createElement('textarea');
@@ -343,7 +381,7 @@ function onload(options) {
                     div.lastElementChild.innerText = statement;
 
                     const pose = document.createElement('div');
-                    pose.className = 'hil pose-message v-messages v-messages__message ' + theme;
+                    pose.className = 'hil-themed pose-message v-messages v-messages__message ' + theme;
                     pose.style.cssText = 'position: absolute;';
                     if (statement in poseElems) {
                         let poseName = poseNames[statement];
@@ -386,11 +424,11 @@ function onload(options) {
                 testimonyDiv.style.display = 'none';
 
             }
-        }, '', 'display: none; background-color: #7f3e44 !important; margin: 0 4px;', makeIcon('mdi-check', 24));
+        }, '', 'display: none; background-color: #7f3e44 !important; margin: 0 4px;', createIcon('mdi-check', 24));
         textButton.parentElement.parentElement.insertBefore(lockTestimony, textButton.parentElement);
 
-        const buttonNextStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', makeIcon('mdi-send', 24));
-        const buttonPrevStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', makeIcon('mdi-send', 24, 'transform: scaleX(-1);'));
+        const buttonNextStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('mdi-send', 24));
+        const buttonPrevStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('mdi-send', 24, 'transform: scaleX(-1);'));
         primaryDiv.appendChild(buttonPrevStatement);
         primaryDiv.appendChild(buttonNextStatement);
 
@@ -400,7 +438,7 @@ function onload(options) {
         const configDiv = document.createElement('div');
         configDiv.style.cssText = 'display: none;flex: 1 1 auto;opacity: 0%;' + DEFAULT_TRANSITION;
 
-        const toggleButton = makeButton(function () {
+        const toggleButton = createButton(function () {
             testimonyMode = !testimonyMode;
             if (testimonyMode) {
 
@@ -441,13 +479,13 @@ function onload(options) {
 
             }
         }, 'Testimony Mode', '', 'margin-right:10px;flex: 1 1 auto;max-width: ' + buttonWidth + 'px;');
-        testimonyRow.appendChild(toggleButton);
+        mainRow.appendChild(toggleButton);
         testimonyRow.appendChild(configDiv);
 
 
         const musicInput = document.createElement('input');
-        musicInput.className = 'hil music-input v-size--default v-sheet--outlined hil-themed-text ' + theme;
-        musicInput.style.cssText = 'display: none; opacity: 0%; position: absolute; top: calc(100% + 10px); height: 100%; width: ' + buttonWidth + 'px; text-align: center; border-radius: 4px; font-size: 0.875rem; overflow: hidden;' + DEFAULT_TRANSITION;
+        musicInput.className = 'hil-themed hil-row-textbox hil-music-input v-size--default v-sheet--outlined hil-themed-text ' + theme;
+        musicInput.style.cssText = 'opacity: 0;width: ' + buttonWidth + 'px;';
         musicInput.placeholder = 'Witness music tag';
 
         musicInput.addEventListener('click', () => musicInput.setSelectionRange(0, musicInput.value.length));
@@ -456,7 +494,7 @@ function onload(options) {
         testimonyRow.appendChild(musicInput);
 
 
-        const buttonAuto = makeButton(function () {
+        const buttonAuto = createButton(function () {
             auto = !auto;
             if (auto) {
                 buttonAuto.firstElementChild.classList.remove('mdi-close');
@@ -465,9 +503,9 @@ function onload(options) {
                 buttonAuto.firstElementChild.classList.add('mdi-close');
                 buttonAuto.firstElementChild.classList.remove('mdi-check');
             }
-        }, 'Use < > from chat', '', buttonCSS);
+        }, 'Use < > from chat', 'hil-testiony-btn');
 
-        const buttonRed = makeButton(function () {
+        const buttonRed = createButton(function () {
             red = !red;
             if (red) {
                 buttonRed.firstElementChild.classList.remove('mdi-close');
@@ -482,9 +520,9 @@ function onload(options) {
                 testimonyDiv.firstElementChild.firstElementChild.style.removeProperty('color');
                 testimonyDiv.lastElementChild.firstElementChild.style.removeProperty('color');
             }
-        }, 'Red Beginning/End', '', buttonCSS);
+        }, 'Red Beginning/End', 'hil-testiony-btn');
 
-        const buttonCrossExam = makeButton(function () {
+        const buttonCrossExam = createButton(function () {
             crossExam = !crossExam;
             if (crossExam) {
                 buttonCrossExam.firstElementChild.classList.remove('mdi-close');
@@ -493,10 +531,10 @@ function onload(options) {
                 buttonCrossExam.firstElementChild.classList.add('mdi-close');
                 buttonCrossExam.firstElementChild.classList.remove('mdi-check');
             }
-        }, 'Cross-exam mode', '', buttonCSS);
+        }, 'Cross-exam mode', 'hil-testiony-btn');
 
         for (let button of [buttonAuto, buttonRed, buttonCrossExam]) {
-            button.prepend(makeIcon('mdi-close', 18, 'margin-right: 8px;'));
+            button.prepend(createIcon('mdi-close', 18, 'margin-right: 8px;'));
             configDiv.appendChild(button);
         }
 
@@ -534,7 +572,7 @@ function onload(options) {
 
             let colorTag;
             if (red && (statement == 0 || statement == statements.length - 1)) {
-                colorTag = '[#/r]';
+                colorTag = '[##nt][#/r]';
             } else if (crossExam) {
                 colorTag = '[#/g]';
                 text = text.replaceAll(/\[#.*?\]/g, '');
@@ -672,6 +710,25 @@ function onload(options) {
                 toStatement(statementI);
             }
         }
+    }
+
+
+
+    if (options['smart-tn']) {
+        const tnInput = document.createElement('input');
+        tnInput.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-themed-text ' + theme;
+        tnInput.placeholder = 'TN';
+        optionsLoaded.then(function(options) {
+            tnInput.value = options['smart-tn-pattern'] || 'TN';
+        })
+        tnInput.addEventListener('change', function() {
+            optionSet('smart-tn-pattern', tnInput.value)
+            window.postMessage([
+                'set_options',
+                options
+            ]);
+        });
+        mainRow.appendChild(tnInput);
     }
 
 
@@ -820,6 +877,31 @@ function onload(options) {
 
         }
         configureDualButton();
+    }
+
+
+
+    if (options['no-talk-toggle']) {
+        const toggle = createSwitch(function(checked) {
+            window.postMessage([
+                'set_socket_state',
+                 {
+                     'no-talk': checked
+                 }
+            ])
+        });
+        toggle.classList.add('hil-no-talk-toggle');
+
+        const toggleLabel = document.createElement('label');
+        toggleLabel.className = 'v-label theme--dark';
+        toggleLabel.textContent = 'No Talking'
+        toggle.appendChild(toggleLabel);
+
+        for (let label of document.querySelectorAll('label')) {
+            if (label.textContent !== 'Pre-animate') continue;
+            label.parentElement.parentElement.parentElement.parentElement.append(toggle);
+            break;
+        }
     }
 
 
@@ -1198,7 +1280,7 @@ optionsLoaded = new Promise(function(resolve, reject) {
 });
 
 
-if (true) {
+{
     const scriptQueue = [];
     const scriptSrcs = new Map();
     function restartQueuedScript() {
@@ -1208,7 +1290,7 @@ if (true) {
             resetNode = document.createElement('script');
             resetNode.textContent = scriptSrcs.get(script).replace(
                 'this.$socket.emit("probe_room',
-                'window.socket=this.$socket;window.dispatchEvent(new CustomEvent("hil_socket"));this.$socket.emit("probe_room',
+                'window.socketComponent=this;window.postMessage(["socket_loaded"]);this.$socket.emit("probe_room',
             );
         } else {
             resetNode = script.cloneNode();
@@ -1245,19 +1327,26 @@ if (true) {
         subtree: true
     })
 
-    window.addEventListener('hil_socket', function() {
-        const script = document.createElement('script');
-        script.src = chrome.runtime.getURL('inject/socket-wrapper.js');
-        script.dataset.hilIgnore = '1';
-        (document.head || document.documentElement).appendChild(script);
-
-        optionsLoaded.then(function(options) {
-            console.log('hi');
-            window.postMessage([
-                'set_options',
-                options
-            ]);
-        });
+    window.addEventListener('message', function(event) {
+        const [type, data] = event.data;
+        
+        switch (type) {
+            case 'socket_loaded':
+                console.log('socket_loaded ping');
+                injectScript(chrome.runtime.getURL('inject/socket-wrapper.js'));
+                optionsLoaded.then(function(options) {
+                    if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
+                });
+                break;
+            case 'wrapper_loaded':
+                optionsLoaded.then(function(options) {
+                    window.postMessage([
+                        'set_options',
+                        options
+                    ]);
+                });
+                break;
+        }
     });
 }
 // window.addEventListener('load', tryMain);

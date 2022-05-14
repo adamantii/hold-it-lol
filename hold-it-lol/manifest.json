@@ -16,7 +16,7 @@
       "run_at": "document_start"
     }
   ],
-  "web_accessible_resources": ["inject/socket-wrapper.js"],
+  "web_accessible_resources": ["inject/socket-wrapper.js", "inject/closest-match/closest-match.js"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

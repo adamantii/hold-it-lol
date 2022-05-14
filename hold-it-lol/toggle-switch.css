@@ -16,7 +16,7 @@
     display: inline-block;
     left: calc(var(--switch-use-radius) / 2);
     width: calc(var(--switch-height) * 2 + var(--switch-use-radius));
-    height: calc(var(--switch-height) * 1.5 + var(--switch-use-radius));
+    height: 50%; /* calc(var(--switch-height) * 1.5 + var(--switch-use-radius)) */
     margin-left: auto;
 }
   
@@ -32,7 +32,7 @@
     left: calc(var(--switch-use-radius) / 2);
     right: 0;
     bottom: 0;
-    width: calc(var(--switch-height) * 2);
+    width: calc(var(--switch-height) * 1.889);
     height: calc(var(--switch-height) / 1.5);
     background-color: var(--switch-color-off-secondary);
     -webkit-transition: var(--transition-duration);

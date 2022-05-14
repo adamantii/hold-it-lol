@@ -1,0 +1,30 @@
+{
+  "name": "closest-match",
+  "version": "1.3.3",
+  "description": "Uses Levenshtein Distance to find the closest string match or matches in an array",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "scripts": {
+    "test": "jest --config jestconfig.json",
+    "build": "tsc",
+    "prepare": "npm run build",
+    "version": "git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "levenshtien",
+    "leven",
+    "closest-match"
+  ],
+  "author": "Plebus Supremus",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^27.0.1",
+    "jest": "^27.1.0",
+    "ts-jest": "^27.0.5",
+    "typescript": "^4.4.2"
+  }
+}
