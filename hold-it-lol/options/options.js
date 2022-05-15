@@ -43,8 +43,8 @@ const tabs = [
 ];
 
 function optionSet(key, value) {
-  chrome.storage.local.get({'options': {}}, function(result) {
-    const options = result.options;
+  chrome.storage.local.get('options', function(result) {
+    const options = result.options || {};
     options[key] = value;
     options['seen-tutorial'] = true;
     chrome.storage.local.set({'options': options});
@@ -54,7 +54,7 @@ function optionSet(key, value) {
 
 function createSwitch(onchange) {
   const label = document.createElement('div');
-  label.className = 'toggle';
+  label.className = 'hil-toggle';
   const input = document.createElement('input');
   input.setAttribute('type', 'checkbox');
   input.style.setProperty('display', 'none');
@@ -226,8 +226,8 @@ function main() {
       optionSwitches[option.key] = optionRow.querySelector('input');
     }
   }
-  chrome.storage.local.get({'options': {}}, function(result) {
-    const options = result.options;
+  chrome.storage.local.get('options', function(result) {
+    const options = result.options || {};
     for (let key of Object.keys(optionSwitches)) {
       const input = optionSwitches[key];
       input.checked = options[key] !== undefined ? options[key] : false;

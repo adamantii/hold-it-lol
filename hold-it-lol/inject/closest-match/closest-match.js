@@ -40,5 +40,5 @@ var closestMatch = function (target, array, showOccurrences) {
         if (vals[i] === min)
             found.push(array[i]);
     }
-    return showOccurrences ? found : found[0];
+    return [showOccurrences ? found : found[0], min];
 };
