@@ -761,13 +761,12 @@ function onload(options) {
                 options
             ]);
         }
-        optionsLoaded.then(function(options) {
-            const patterns = options['smart-tn-patterns'] || ['TN'];
-            for (let pattern of patterns) {
-                addPatternInput(pattern);
-            }
-            addPatternInput('');
-        });
+
+        const patterns = options['smart-tn-patterns'] || ['TN'];
+        for (let pattern of patterns) {
+            addPatternInput(pattern);
+        }
+        addPatternInput('');
     }
 
 
@@ -919,43 +918,6 @@ function onload(options) {
     }
 
 
-
-    // if (options['no-talk-toggle'] || options['smart-tn']) {
-    //     const toggles = [];
-    //     if (options['no-talk-toggle']) {
-    //         const toggle = createSwitch(function(checked) {
-    //             window.postMessage([
-    //                 'set_socket_state',
-    //                 {
-    //                     'no-talk': checked
-    //                 }
-    //             ])
-    //         }, 'No Talking');
-    //         toggle.classList.add('hil-toggle-talk');
-    //         toggles.push(toggle);
-    //     }
-
-    //     if (options['smart-tn']) {
-    //         const toggle = createSwitch(function(checked) {
-    //             // window.postMessage([
-    //                 //     'set_socket_state',
-    //                 //      {
-    //                     //          'no-talk': checked
-    //                     //      }
-    //                     // ])
-    //         }, 'TN-animate');
-    //         toggle.classList.add('hil-toggle-tn');
-    //         toggles.push(toggle);
-    //     }
-                    
-    //     for (let label of document.querySelectorAll('label')) {
-    //         if (label.textContent !== 'Pre-animate') continue;
-    //         for (const toggle of toggles) {
-    //             label.parentElement.parentElement.parentElement.parentElement.append(toggle);
-    //         }
-    //         break;
-    //     }
-    // }
     if (options['no-talk-toggle'] || options['smart-tn']) {
         const activeToggleClasses = ['v-input--is-label-active', 'v-input--is-dirty', 'primary--text'];
         for (let label of document.querySelectorAll('label')) {
@@ -992,22 +954,26 @@ function onload(options) {
                 return newToggle;
             }
 
-            const toggleData = [
-                ['No Talking', 'no-talk', false],
-                ['TN-animate', 'tn-enabled', true],
-            ];
+            const toggleData = [];
+            options['no-talk-toggle'] && toggleData.push({label: 'No Talking', state: 'no-talk', checked: false});
+            options['smart-tn'] && toggleData.push({label: 'TN-animate', state: 'tn-enabled', checked: options['tn-toggle-value'], onchange: function(checked) {
+                optionSet('tn-toggle-value', checked);
+            }});
+            const toggles = {};
             for (let i = 0; i < toggleData.length; i++) {
-                const [ text, state, checked ] = toggleData[i];
+                const { label, state, checked, onchange } = toggleData[i];
                 const toggle = createToggle(function(checked) {
+                    onchange && onchange(checked);
                     window.postMessage([
                         'set_socket_state',
                         {
                             [ state ]: checked
                         }
-                    ])
-                }, text, checked);
+                    ]);
+                }, label, checked);
                 if (i !== toggleData.length - 1) toggle.classList.add('mr-4');
                 flipToggle.parentElement.appendChild(toggle);
+                toggles[state] = toggle;
             }
             
             flipToggle.style.cssText = 'margin-right:16px!important';
