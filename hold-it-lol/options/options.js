@@ -35,7 +35,7 @@ const tabs = [
         {key: 'bulk-evidence', title: 'Add evidence from table (Beta)', description: 'Automatically add lots of evidence via a copy-pasted table from a document.<br>(Works with tables where each evidence takes up a row)', preview: 'previews/placeholder.png'},
         {key: 'list-moderation', title: 'Moderate from user list', description: 'Quickly mute, ban anyone or make them a moderator from the user list.', preview: 'previews/placeholder.png'}, // TODO
         {key: 'mute-character', title: 'Mute only character', description: 'Someone\'s character is laggy or unpleasant? Hide just the character, while still seeing their messages.', preview: 'previews/placeholder.png'}, // TODO
-        {key: 'now-playing', title: '"Now playing..." display', description: 'Shows info about the currently playing music.', preview: 'previews/placeholder.png'}, // TODO
+        {key: 'now-playing', title: '"Now playing..." display', description: 'Shows info about the currently playing music.', preview: 'previews/placeholder.png'},
         {key: 'custom-log', title: 'Extra chat log', description: 'A log storing more messages with extra info.', preview: 'previews/placeholder.png'}, // TODO
         //{key: 'dual-wield', title: 'Dual Wield', description: 'A mode that lets you control two paired characters at the same time.', preview: 'previews/placeholder.png'},
         //{key: 'chat-moderation', title: 'Mute/ban directly from chat', description: 'Be quick with your moderation by using mute & ban buttons next to user\'s messages.', preview: 'previews/placeholder.png'},

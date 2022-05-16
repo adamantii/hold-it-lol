@@ -272,6 +272,16 @@ function onload(options) {
         return div;
     }
 
+
+    if (options['now-playing']) {
+        const row = createRow(helperDiv);
+        row.classList.add('hil-tab-row-now-playing');
+        const span = document.createElement('span');
+        span.innerHTML = 'Now Playing: …';
+        row.appendChild(span);
+    }
+
+
     const TabState = {
         DEFAULT: {
             enabled: true,

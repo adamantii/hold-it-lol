@@ -1,6 +1,5 @@
 :root {
     --default-transition: .15s cubic-bezier(.25,.8,.5,1);
-    --switch-height: 18px;
     --testimony-color-dark: #552a2e;
     --testimony-color-light: #be747b;
 }
@@ -41,7 +40,7 @@ input.hil-row-textbox {
     font-size: 0.875rem;
     overflow: hidden;
     transition: var(--default-transition);
-    color: rgb(255, 255, 255);
+    color: rgb(104, 72, 72);
 }
 
 input.hil-music-input {
@@ -53,6 +52,14 @@ input.hil-music-input {
     margin-top: auto;
     margin-bottom: auto;
     font-weight: 300;
+}
+
+.hil-tab-row-now-playing {
+    justify-content: right;
+}
+
+.hil-tab-row-now-playing span {
+    margin-right: 12px;
 }
 
 .hil-tab-row-tn input {
@@ -68,25 +75,6 @@ button.hil-testiony-btn {
 
 .hil-testiony-btn.theme--light {
     background-color: var(--testimony-color-light)!important;
-}
-
-.hil-toggle label {
-    position: absolute;
-    left: calc(var(--switch-use-radius) / 2 + var(--switch-height) * 1.889 + 12px);
-    width: max-content;
-    top: 50%;
-    margin-top: -0.5em;
-    cursor: pointer;
-}
-
-.hil-toggle-talk {
-    width: calc(var(--switch-use-radius) / 2 + var(--switch-height) * 1.889 + 12px + 10ch);
-    margin-left: -8px;
-}
-
-.hil-toggle-tn {
-    width: calc(var(--switch-use-radius) / 2 + var(--switch-height) * 1.889 + 12px + 10ch);
-    margin-left: -8px;
 }
 
 .hil-evidence-title {

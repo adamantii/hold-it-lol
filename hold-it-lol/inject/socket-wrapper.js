@@ -8,11 +8,54 @@ function main(socketComponent) {
     const DEBUGLOGS = true;
     const socket = socketComponent.$socket;
 
-    window.postMessage(['wrapper_loaded'])
+    function httpGetAsync(url) {
+        return new Promise((resolve, reject) => {
+            const XMLHttp = new XMLHttpRequest();
+            XMLHttp.onreadystatechange = function () {
+                if (XMLHttp.readyState == 4 && XMLHttp.status == 200) resolve(XMLHttp.responseText);
+            }
+            XMLHttp.open("GET", url, true);
+            XMLHttp.send(null);
+        });
+    }
+
+    window.postMessage(['wrapper_loaded']);
 
     const origOnevent = socket.onevent;
     socket.onevent = function(e) {
         if (DEBUGLOGS) console.log('event', e);
+        const [ action, data ] = e.data;
+
+        if (action === 'receive_message') {
+            if (socketStates['options']['now-playing']) {
+                const musicSpan = document.querySelector('div.hil-tab-row-now-playing > span');
+                const match = data.frame.text.match(/\[#bgm(?:[0-9]*?|s|d)\]/g);
+                if (match !== null) {
+                    const tag = match[match.length - 1].match(/\[#bgm(.*?)\]/)[1];
+                    if (tag == 's') {
+                        musicSpan.innerHTML = 'Now Playing: …';
+                    } else if (tag == 'd') {
+                        musicSpan.innerHTML = 'Now Playing: 😵‍💫';
+                    } else if (parseInt(tag) !== NaN) {
+                        const url = 'https://api.objection.lol/assets/music/get?id=' + tag;
+                        httpGetAsync(url).then(function(response) {
+                            const music = JSON.parse(response);
+                            // const audioElement = document.createElement('audio');
+                            // audioElement.src = music.url;
+                            // socketStates['now-playing-duration'] = Math.round(audioElement.duration);
+
+                            musicSpan.textContent = music.name ? '"' + music.name + '"' : 'Unnamed';
+
+                            function updateNowPlaying() {
+                                musicSpan.innerHTML = 'Now Playing: <b>' + musicSpan.innerHTML + '</b>';
+                            }
+                            updateNowPlaying();
+                        })
+                    }
+                }
+            }
+        }
+
         origOnevent(e);
     }
 
