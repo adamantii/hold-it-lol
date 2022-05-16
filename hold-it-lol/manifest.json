@@ -12,7 +12,7 @@
     {
       "matches": ["https://objection.lol/courtroom/*"],
       "js": ["content/content.js"],
-      "css": ["toggle-switch.css", "content/style.css"],
+      "css": ["content/style.css"],
       "run_at": "document_start"
     }
   ],
