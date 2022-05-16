@@ -17,11 +17,11 @@ function main(socketComponent) {
     }
 
     const origEmit = socket.emit;
-    socket.emit = function(type, data) {
-        if (DEBUGLOGS) console.log('emit', type, data);
+    socket.emit = function(action, data) {
+        if (DEBUGLOGS) console.log('emit', action, data);
         let delay = 0;
 
-        if (type === 'message') {
+        if (action === 'message') {
             if (socketStates['no-talk'] || data.text.includes('[##nt]')) data.doNotTalk = true;
             if (socketStates['options']['smart-pre'] && data.poseId === socketStates['prev-pose']) data.poseAnimation = false;
             if (socketStates['options']['smart-tn']) {
@@ -56,7 +56,7 @@ function main(socketComponent) {
                         const tnFrame = JSON.parse(JSON.stringify(data));
                         tnFrame.poseId = tnPoseId;
                         tnFrame.text = '';
-                        origEmit.call(socket, type, tnFrame);
+                        origEmit.call(socket, action, tnFrame);
                         delay = 1000;
                     }
                 })();
@@ -65,15 +65,15 @@ function main(socketComponent) {
             socketStates['prev-char'] = data.characterId;
         }
 
-        if (delay === 0) origEmit.call(socket, type, data);
-        else setTimeout(() => origEmit.call(socket, type, data), delay);
+        if (delay === 0) origEmit.call(socket, action, data);
+        else setTimeout(() => origEmit.call(socket, action, data), delay);
     }
 }
 
 window.addEventListener('message', function(event) {
-    const [type, data] = event.data;
-    if (type == 'set_options') socketStates.options = data;
-    if (type == 'set_socket_state') {
+    const [action, data] = event.data;
+    if (action == 'set_options') socketStates.options = data;
+    if (action == 'set_socket_state') {
         for (const key in data) {
             socketStates[key] = data[key];
         }

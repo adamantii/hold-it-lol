@@ -9,10 +9,11 @@ const tabs = [
       {key: 'auto-record', title: 'Auto-recording', description: 'Automatically record all courtrooms.', preview: 'previews/placeholder.png'},
       {key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close all formatting menus after you\'ve used them.', preview: 'previews/placeholder.png'},
       {key: 'menu-hover', title: 'Open menus by hovering', description: 'Open formatting menus by hovering over them as opposed to clicking.', preview: 'previews/placeholder.png'},
-      {key: 'chat-fix', title: 'Fixed chat log', description: 'Fixes selection and scrolling in the chat log.', preview: 'previews/placeholder.png', preview: 'previews/placeholder.png'},
+      //{key: 'chat-fix', title: 'Fixed chat log', description: 'Fixes selection and scrolling in the chat log.', preview: 'previews/placeholder.png', preview: 'previews/placeholder.png'},
       //{key: 'a-d-fix', title: 'Fixed A / D hotkeys', description: 'A and D properly cycle poses from left to right (when using pose icons).', preview: 'previews/placeholder.png'},
       {key: 'sound-search', title: 'Sounds and music: Fixed search', description: 'Makes the search list a bit quicker (Auto-focus as you type).', preview: 'previews/placeholder.png'},
       {key: 'auto-mute', title: 'Auto-mute users', description: 'Add a list of Discord usernames of unwanted users to automatically mute when they join.', preview: 'previews/placeholder.png'}, // TODO
+      {key: 'convert-chat-urls', title: 'Clickable chat links', description: 'Chat log URLs become clickable. You can <i>also</i> right click to quickly save sounds & music!', preview: 'previews/placeholder.png'}, // TODO
     ],
   },
   {

@@ -6,6 +6,7 @@
     "webNavigation",
     "storage",
     "tabs",
+    "contextMenus",
     "*://objection.lol/courtroom/*"
   ],
   "content_scripts": [

@@ -8,6 +8,7 @@ const DEFAULT_TRANSITION = 'transition: .15s cubic-bezier(.25,.8,.5,1);';
 const MENUS_NOT_AUTO_CLOSE = ['Text Color'];
 const SELECTORS_MENU_HOVER = ['.menuable__content__active', 'div.v-sheet.secondary', 'button.v-app-bar__nav-icon', '.mb-2.col-sm-4.col-md-6.col-lg-3.col-6'];
 const PAUSE_PUNCTUATION = '.,!?:;';
+const URL_REGEX = /(?<!<a target="_blank" href="(?:.*?>)?)(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/g;
 
 const TAG_PAUSE_100 = '[#p100]';
 const TAG_MUSIC_FADE_OUT = '[#bgmfo]';
@@ -772,6 +773,7 @@ function onload(options) {
 
 
     const menuTitles = {};
+    const assetWindowButtons = {};
     let dualEffectMode = false;
     updateSelectionState();
 
@@ -848,7 +850,9 @@ function onload(options) {
 
             if (options['sound-insert']) {
                 for (let menuTitle of ['Sound', 'Music']) {
-                    const combobox = menuTitles[menuTitle].querySelector('[role="combobox"]');
+                    const menu = menuTitles[menuTitle];
+                    const combobox = menu.querySelector('[role="combobox"]');
+                    assetWindowButtons[menuTitle] = menu.querySelector('.indigo');
                     const input = combobox.querySelector('input[type="text"]');
                     let defaultOption;
                     input.addEventListener('focus', function () {
@@ -857,7 +861,7 @@ function onload(options) {
                     let menuObserver = new MutationObserver(function () {
                         setTimeout(function () {
                             if (!(combobox.ariaExpanded == "false" && input.value != defaultOption && !modifierKeys.shift)) return;
-                            menuTitles[menuTitle].querySelector('.v-btn.primary').click();
+                            menu.querySelector('.v-btn.primary').click();
                             textArea.focus();
                         }, 1);
                     });
@@ -1274,7 +1278,8 @@ function onload(options) {
 
     const chatObserver = new MutationObserver(function () {
         const messageNode = chat.lastElementChild;
-        const messageText = messageNode.lastElementChild.lastElementChild.innerText;
+        const messageTextDiv = messageNode.querySelector('.chat-text');
+        const messageText = messageTextDiv.innerText;
 
         if (musicPlaying && messageText.includes(STOP_MUSIC_TEXT)) {
             musicPlaying = false;
@@ -1286,35 +1291,46 @@ function onload(options) {
             else if (testRegex(messageText, '<[0-9]*?>')) testimonyFuncs.index(Number(messageText.slice(1, -1)));
         }
 
-        if (options['chat-fix']) {
-            if (chatBox.scrollTop + chatBox.clientHeight > chatBox.scrollHeight - 25) {
-                chatBox.scrollTop = chatBox.scrollHeight
-            } else {
-                chatBox.scrollTop -= messageNode.clientHeight
-            }
-
-            const baseNodeDiv = currentSelectionState.baseNodeDiv;
-            const extentNodeDiv = currentSelectionState.extentNodeDiv;
-            if (
-                chat.children.length == 100 &&
-                chat.contains(baseNodeDiv) &&
-                chat.contains(extentNodeDiv) &&
-                baseNodeDiv != null &&
-                baseNodeDiv.parentElement.parentElement.parentElement.parentElement == chatBox
-            ) {
-                const newBaseAndExtent = [];
-                for (let node of [baseNodeDiv, extentNodeDiv]) {
-                    const isChatText = node.matches('.chat-text');
-                    const prevMessage = node.parentElement.parentElement.previousElementSibling.lastElementChild;
-                    if (isChatText && prevMessage.querySelector('.chat-text')) {
-                        newBaseAndExtent.push(prevMessage.querySelector('.chat-text').firstChild);
-                    } else {
-                        newBaseAndExtent.push(prevMessage.firstElementChild.firstChild);
-                    }
-                }
-                sel.setBaseAndExtent(newBaseAndExtent[0], currentSelectionState.baseOffset, newBaseAndExtent[1], currentSelectionState.extentOffset)
+        if (options['convert-chat-urls']) {
+            const text = messageTextDiv.innerHTML;
+            const match = text.match(URL_REGEX);
+            if (match !== null) {
+                messageTextDiv.innerHTML = text.replaceAll(
+                    URL_REGEX,
+                    '<a target="_blank" href="$&">$&</a>',
+                );
             }
         }
+
+        // if (options['chat-fix']) {
+        //     if (chatBox.scrollTop + chatBox.clientHeight > chatBox.scrollHeight - 25) {
+        //         chatBox.scrollTop = chatBox.scrollHeight
+        //     } else {
+        //         chatBox.scrollTop -= messageNode.clientHeight
+        //     }
+
+        //     const baseNodeDiv = currentSelectionState.baseNodeDiv;
+        //     const extentNodeDiv = currentSelectionState.extentNodeDiv;
+        //     if (
+        //         chat.children.length == 100 &&
+        //         chat.contains(baseNodeDiv) &&
+        //         chat.contains(extentNodeDiv) &&
+        //         baseNodeDiv != null &&
+        //         baseNodeDiv.parentElement.parentElement.parentElement.parentElement == chatBox
+        //     ) {
+        //         const newBaseAndExtent = [];
+        //         for (let node of [baseNodeDiv, extentNodeDiv]) {
+        //             const isChatText = node.matches('.chat-text');
+        //             const prevMessage = node.parentElement.parentElement.previousElementSibling.lastElementChild;
+        //             if (isChatText && prevMessage.querySelector('.chat-text')) {
+        //                 newBaseAndExtent.push(prevMessage.querySelector('.chat-text').firstChild);
+        //             } else {
+        //                 newBaseAndExtent.push(prevMessage.firstElementChild.firstChild);
+        //             }
+        //         }
+        //         sel.setBaseAndExtent(newBaseAndExtent[0], currentSelectionState.baseOffset, newBaseAndExtent[1], currentSelectionState.extentOffset)
+        //     }
+        // }
     });
 
     chatObserver.observe(chat, {
@@ -1340,6 +1356,31 @@ function onload(options) {
 
         appObserver.observe(app, {
             childList: true,
+        });
+    }
+
+    if (options['convert-chat-urls']) {
+        chrome.runtime.sendMessage(["create-asset-context-menu"]);
+        chrome.runtime.onMessage.addListener(function(event) {
+            const [ action, data ] = event;
+            if (action == "save-asset") {
+                console.log(data.menuItemId, data.linkUrl);
+                let buttonTitle;
+                if (data.menuItemId == 'hil-save-sound') buttonTitle = 'Sound';
+                if (data.menuItemId == 'hil-save-music') buttonTitle = 'Music';
+                if (!buttonTitle) return;
+                assetWindowButtons[buttonTitle].click();
+
+                setTimeout(function() {
+                    for (let label of document.querySelectorAll('.v-window-item--active label')) {
+                        if (label.textContent !== 'URL') continue;
+                        const input = label.parentElement.querySelector('input');
+                        input.value = data.linkUrl;
+                        input.dispatchEvent(new Event('input'));
+                        setTimeout(() => label.parentElement.parentElement.parentElement.parentElement.previousElementSibling.querySelector('input').focus(), 25); // TODO
+                    }
+                }, 250);
+            }
         });
     }
 
@@ -1405,9 +1446,9 @@ optionsLoaded = new Promise(function(resolve, reject) {
     })
 
     window.addEventListener('message', function(event) {
-        const [type, data] = event.data;
+        const [action, data] = event.data;
         
-        switch (type) {
+        switch (action) {
             case 'socket_loaded':
                 console.log('socket_loaded ping');
                 injectScript(chrome.runtime.getURL('inject/socket-wrapper.js'));
@@ -1428,8 +1469,9 @@ optionsLoaded = new Promise(function(resolve, reject) {
 }
 // window.addEventListener('load', tryMain);
 
-// chrome.runtime.onMessage.addListener(data => {
-//     if (data.action == "loaded") {
+// chrome.runtime.onMessage.addListener(function(event) {
+//     const [ action, data ] = event;
+//     if (action == "loaded") {
 //         tryMain();
 //     }
 // });
