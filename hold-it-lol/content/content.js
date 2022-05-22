@@ -8,7 +8,7 @@ const DEFAULT_TRANSITION = 'transition: .15s cubic-bezier(.25,.8,.5,1);';
 const MENUS_NOT_AUTO_CLOSE = ['Text Color'];
 const SELECTORS_MENU_HOVER = ['.menuable__content__active', 'div.v-sheet.secondary', 'button.v-app-bar__nav-icon', '.mb-2.col-sm-4.col-md-6.col-lg-3.col-6'];
 const PAUSE_PUNCTUATION = '.,!?:;';
-const URL_REGEX = /(?<!<a target="_blank" href="(?:.*?>)?)(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/g;
+const URL_REGEX = /((?:http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+(?:[\-\.]{1}[a-z0-9]+)*\.[a-z]{1,5}(?::[0-9]{1,5})?(?:\/.*?)?\w)(\W*?(?:\s|$))/gi;
 
 const TAG_PAUSE_100 = '[#p100]';
 const TAG_MUSIC_FADE_OUT = '[#bgmfo]';
@@ -109,6 +109,26 @@ function primaryButton(listener, classText, styleText, child) {
 
     if (listener) button.addEventListener('click', listener);
 
+    return button;
+}
+function iconToggleButton(listenerCheck, text, classText, styleText, defaultEnabled = false) {
+    function toggle(enabled){
+        if (enabled) {
+            button.classList.add('success');
+            button.firstElementChild.classList.remove('mdi-close');
+            button.firstElementChild.classList.add('mdi-check');
+        } else {
+            button.classList.remove('success');
+            button.firstElementChild.classList.add('mdi-close');
+            button.firstElementChild.classList.remove('mdi-check');
+        }
+    }
+    const button = createButton(function() {
+        const enabled = listenerCheck();
+        toggle(enabled);
+    }, text, classText, styleText);
+    button.prepend(createIcon('mdi-close', 18, 'margin-right: 8px;'));
+    if (defaultEnabled) toggle(true);
     return button;
 }
 
@@ -311,7 +331,7 @@ function onload(options) {
             style.opacity = '0';
             setTimeout(() => style.display = 'none', 150);
         }
-        if (tabState.tabButton) tabState.tabButton.classList.remove('info');
+        if (tabState.tabButton) tabState.tabButton.classList.remove('hil-btn-tab-active');
         tabState.enabled = false;
         tabState = state;
         if (tabState.onEnable) tabState.onEnable();
@@ -319,15 +339,16 @@ function onload(options) {
             tabState.contentDiv.style.opacity = '1';
             tabState.contentDiv.style.removeProperty('display');
         }
-        if (tabState.tabButton) tabState.tabButton.classList.add('info');
+        if (tabState.tabButton) tabState.tabButton.classList.add('hil-btn-tab-active');
         tabState.enabled = true;
     }
-    function createTabRow(state) {
-        const row = createRow(contentRow);
-        row.style.opacity = '0';
-        row.style.display = 'none';
-        state.contentDiv = row;
-        return row;
+    function createTabDiv(state) {
+        const div = document.createElement('div');
+        div.style.opacity = '0';
+        div.style.display = 'none';
+        state.contentDiv = div;
+        contentRow.appendChild(div);
+        return div;
     }
     function createTabButton(state, text) {
         const button = createButton(function () {
@@ -343,7 +364,8 @@ function onload(options) {
 
     let testimonyFuncs = {};
     if (options['testimony-mode']) {
-        const testimonyRow = createTabRow(TabState.TESTIMONY);
+        const tabDiv = createTabDiv(TabState.TESTIMONY);
+        const testimonyRow = createRow(tabDiv);
         let testimonyMode = false;
 
         const testimonyArea = document.createElement('textarea');
@@ -509,49 +531,21 @@ function onload(options) {
         testimonyRow.appendChild(musicInput);
 
 
-        const buttonAuto = createButton(function () {
-            auto = !auto;
-            if (auto) {
-                buttonAuto.firstElementChild.classList.remove('mdi-close');
-                buttonAuto.firstElementChild.classList.add('mdi-check');
-            } else {
-                buttonAuto.firstElementChild.classList.add('mdi-close');
-                buttonAuto.firstElementChild.classList.remove('mdi-check');
-            }
-        }, 'Use < > from chat', 'hil-testiony-btn');
-
-        const buttonRed = createButton(function () {
+        configDiv.appendChild(iconToggleButton(function() { return auto = !auto; }, 'Use < > from chat', 'hil-testiony-btn'));
+        configDiv.appendChild(iconToggleButton(function() {
             red = !red;
-            if (red) {
-                buttonRed.firstElementChild.classList.remove('mdi-close');
-                buttonRed.firstElementChild.classList.add('mdi-check');
-                if (testimonyDiv.childElementCount == 0) return;
-                testimonyDiv.firstElementChild.firstElementChild.style.color = '#f00';
-                testimonyDiv.lastElementChild.firstElementChild.style.color = '#f00';
-            } else {
-                buttonRed.firstElementChild.classList.add('mdi-close');
-                buttonRed.firstElementChild.classList.remove('mdi-check');
-                if (testimonyDiv.childElementCount == 0) return;
-                testimonyDiv.firstElementChild.firstElementChild.style.removeProperty('color');
-                testimonyDiv.lastElementChild.firstElementChild.style.removeProperty('color');
+            if (testimonyDiv.childElementCount > 0) {
+                if (red) {
+                    testimonyDiv.firstElementChild.firstElementChild.style.color = '#f00';
+                    testimonyDiv.lastElementChild.firstElementChild.style.color = '#f00';
+                } else {
+                    testimonyDiv.firstElementChild.firstElementChild.style.removeProperty('color');
+                    testimonyDiv.lastElementChild.firstElementChild.style.removeProperty('color');
+                }
             }
-        }, 'Red Beginning/End', 'hil-testiony-btn');
-
-        const buttonCrossExam = createButton(function () {
-            crossExam = !crossExam;
-            if (crossExam) {
-                buttonCrossExam.firstElementChild.classList.remove('mdi-close');
-                buttonCrossExam.firstElementChild.classList.add('mdi-check');
-            } else {
-                buttonCrossExam.firstElementChild.classList.add('mdi-close');
-                buttonCrossExam.firstElementChild.classList.remove('mdi-check');
-            }
-        }, 'Cross-exam mode', 'hil-testiony-btn');
-
-        for (let button of [buttonAuto, buttonRed, buttonCrossExam]) {
-            button.prepend(createIcon('mdi-close', 18, 'margin-right: 8px;'));
-            configDiv.appendChild(button);
-        }
+            return red;
+        }, 'Red Beginning/End', 'hil-testiony-btn'));
+        configDiv.appendChild(iconToggleButton(function() { return crossExam = !crossExam; }, 'Cross-exam mode', 'hil-testiony-btn'));
 
 
         function toStatement(statement) {
@@ -731,7 +725,8 @@ function onload(options) {
 
     if (options['smart-tn']) {
         const tnButton = createTabButton(TabState.TN, 'TN animations');
-        const tnRow = createTabRow(TabState.TN);
+        const tnDiv = createTabDiv(TabState.TN);
+        const tnRow = createRow(tnDiv);
         tnRow.classList.add('hil-tab-row-tn')
         
         const description = document.createElement('span');
@@ -740,23 +735,23 @@ function onload(options) {
         description.style.whiteSpace = 'nowrap';
         tnRow.appendChild(description);
 
-        const patternInputs = document.createElement('div');
-        patternInputs.style.display = 'flex';
-        tnRow.appendChild(patternInputs);
+        // const patternInputs = document.createElement('div');
+        // patternInputs.style.display = 'flex';
+        // tnRow.appendChild(patternInputs);
         function addPatternInput(value = '') {
             const input = document.createElement('input');
-            input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-themed-text ' + theme;
+            input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-tn-pattern hil-themed-text ' + theme;
             input.placeholder = 'TN';
             input.value = value;
             input.addEventListener('click', () => input.setSelectionRange(0, input.value.length));
             input.addEventListener('change', onPatternsUpdate);
-            patternInputs.appendChild(input);
+            tnRow.appendChild(input);
             return input;
         }
         function onPatternsUpdate() {
             const patterns = [];
             const toRemove = [];
-            for (let input of patternInputs.children) {
+            for (let input of tnRow.querySelectorAll('input')) {
                 if (input.value === '') {
                     toRemove.push(input);
                     continue;
@@ -778,6 +773,16 @@ function onload(options) {
             addPatternInput(pattern);
         }
         addPatternInput('');
+
+        const optionsRow = createRow(tnDiv);
+        optionsRow.appendChild(iconToggleButton(function() {
+            optionSet('tn-toggle-on-screen', !options['tn-toggle-on-screen']);
+            window.postMessage([
+                'set_options',
+                options
+            ]);
+            return options['tn-toggle-on-screen'];
+        }, 'Only TN when character is on screen', '', '', options['tn-toggle-on-screen'] !== undefined ? options['tn-toggle-on-screen'] : true));
     }
 
 
@@ -969,25 +974,26 @@ function onload(options) {
             }
 
             const toggleData = [];
-            options['no-talk-toggle'] && toggleData.push({label: 'No Talking', state: 'no-talk', checked: false});
-            options['smart-tn'] && toggleData.push({label: 'TN-animate', state: 'tn-enabled', checked: options['tn-toggle-value'], onchange: function(checked) {
-                optionSet('tn-toggle-value', checked);
+            options['no-talk-toggle'] && toggleData.push({label: 'No Talking', checked: false, onchange: function(checked) {
+                window.postMessage(['set_socket_state', {
+                        [ 'no-talk' ]: checked
+                    }]);
             }});
-            const toggles = {};
+            options['smart-tn'] && toggleData.push({label: 'TN-animate', checked: options['tn-toggle-value'], onchange: function(checked) {
+                optionSet('tn-toggle-value', checked);
+                window.postMessage([
+                    'set_options',
+                    options
+                ]);
+            }});
             for (let i = 0; i < toggleData.length; i++) {
-                const { label, state, checked, onchange } = toggleData[i];
+                const { label, checked, onchange } = toggleData[i];
                 const toggle = createToggle(function(checked) {
-                    onchange && onchange(checked);
-                    window.postMessage([
-                        'set_socket_state',
-                        {
-                            [ state ]: checked
-                        }
-                    ]);
+                    onchange(checked);
                 }, label, checked);
+
                 if (i !== toggleData.length - 1) toggle.classList.add('mr-4');
                 flipToggle.parentElement.appendChild(toggle);
-                toggles[state] = toggle;
             }
             
             flipToggle.style.cssText = 'margin-right:16px!important';
@@ -1287,6 +1293,25 @@ function onload(options) {
 
 
     const chatObserver = new MutationObserver(function () {
+        if (options['convert-chat-urls']) {
+            for (let messageNode of chat.children) {
+                const messageTextDiv = messageNode.querySelector('.chat-text');
+                const html = messageTextDiv.innerHTML;
+                if (html.includes('</a>')) continue;
+
+                const match = html.match(URL_REGEX);
+                if (match === null) continue;
+
+                let url = match[0];
+                if (url.match('http:\/\/') !== null) url = 'https' + url.slice(4);
+                else if (url.match('https:\/\/') === null) url = 'https://' + url;
+                messageTextDiv.innerHTML = html.replaceAll(
+                    URL_REGEX,
+                    '<a target="_blank" href="' + url + '">$1</a>$2',
+                );
+            }
+        }
+
         const messageNode = chat.lastElementChild;
         const messageTextDiv = messageNode.querySelector('.chat-text');
         const messageText = messageTextDiv.innerText;
@@ -1299,17 +1324,6 @@ function onload(options) {
             if (testRegex(messageText, '[> ]*') && messageText.indexOf('>') !== -1) testimonyFuncs.arrow('>');
             else if (testRegex(messageText, '[< ]*') && messageText.indexOf('<') !== -1) testimonyFuncs.arrow('<');
             else if (testRegex(messageText, '<[0-9]*?>')) testimonyFuncs.index(Number(messageText.slice(1, -1)));
-        }
-
-        if (options['convert-chat-urls']) {
-            const text = messageTextDiv.innerHTML;
-            const match = text.match(URL_REGEX);
-            if (match !== null) {
-                messageTextDiv.innerHTML = text.replaceAll(
-                    URL_REGEX,
-                    '<a target="_blank" href="$&">$&</a>',
-                );
-            }
         }
 
         // if (options['chat-fix']) {

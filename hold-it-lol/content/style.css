@@ -32,6 +32,10 @@ button.hil-row-btn {
     transition: var(--default-transition);
 }
 
+button.hil-btn-tab-active {
+    background-color: #777!important;
+}
+
 input.hil-row-textbox {
     display: block;
     height: 100%;
@@ -62,8 +66,9 @@ input.hil-music-input {
     margin-right: 12px;
 }
 
-.hil-tab-row-tn input {
-    width: 20%
+input.hil-tn-pattern {
+    max-width: 5%;
+    color: #fff;
 }
 
 button.hil-testiony-btn {
