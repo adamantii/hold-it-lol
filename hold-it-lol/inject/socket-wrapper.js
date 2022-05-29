@@ -111,6 +111,8 @@ function main(socketComponent) {
             }
             socketStates['prev-pose'] = data.poseId;
             socketStates['prev-char'] = data.characterId;
+
+            data.text = data.text.replaceAll(/\[##.*?\]/g, '');
         }
 
         if (delay === 0) origEmit.call(socket, action, data);
