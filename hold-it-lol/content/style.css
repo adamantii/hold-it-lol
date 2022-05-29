@@ -44,30 +44,29 @@ input.hil-row-textbox {
     font-size: 0.875rem;
     overflow: hidden;
     transition: var(--default-transition);
-    color: rgb(104, 72, 72);
+    color: #fff;
 }
 
-input.hil-music-input {
-    position: absolute;
-    top: calc(100% + 10px);
-}
-
-.hil-row span {
+div.hil-row span {
     margin-top: auto;
     margin-bottom: auto;
     font-weight: 300;
 }
 
-.hil-tab-row-now-playing {
+div.hil-tab-content {
+    width: 100%;
+}
+
+div.hil-tab-row-now-playing {
     justify-content: right;
 }
 
-.hil-tab-row-now-playing span {
+div.hil-tab-row-now-playing span {
     margin-right: 12px;
 }
 
 input.hil-tn-pattern {
-    max-width: 5%;
+    max-width: 3rem;
     color: #fff;
 }
 

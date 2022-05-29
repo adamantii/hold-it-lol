@@ -344,6 +344,7 @@ function onload(options) {
     }
     function createTabDiv(state) {
         const div = document.createElement('div');
+        div.className = 'hil-tab-content';
         div.style.opacity = '0';
         div.style.display = 'none';
         state.contentDiv = div;
@@ -354,7 +355,7 @@ function onload(options) {
         const button = createButton(function () {
             if (!state.enabled) setState(state);
             else setState(TabState.DEFAULT);
-        }, text, '', 'flex: 1 1 auto;max-width: 130.75px;');
+        }, text, '', 'flex: 1 1 auto;max-width: 10rem;');
         tabRow.appendChild(button);
         state.tabButton = button;
         return button;
@@ -366,7 +367,6 @@ function onload(options) {
     if (options['testimony-mode']) {
         const tabDiv = createTabDiv(TabState.TESTIMONY);
         const testimonyRow = createRow(tabDiv);
-        let testimonyMode = false;
 
         const testimonyArea = document.createElement('textarea');
         testimonyArea.className = 'hil-themed-text';
@@ -492,9 +492,6 @@ function onload(options) {
         textButton.parentElement.parentElement.appendChild(primaryDiv);
 
 
-        const configDiv = document.createElement('div');
-        configDiv.style.cssText = 'flex: 1 1 auto;' + DEFAULT_TRANSITION;
-
         TabState.TESTIMONY.onEnable = function() {
             textArea.style.display = 'none';
 
@@ -517,22 +514,37 @@ function onload(options) {
             primaryDiv.style.display = 'none';
         }
         const toggleButton = createTabButton(TabState.TESTIMONY, 'Testimony Mode');
-        testimonyRow.appendChild(configDiv);
 
 
-        const musicInput = document.createElement('input');
-        musicInput.className = 'hil-themed hil-row-textbox hil-music-input v-size--default v-sheet--outlined hil-themed-text ' + theme;
-        musicInput.style.cssText = 'width: 130.75px;';
-        musicInput.placeholder = 'Witness music tag';
+        const inputRow = createRow(tabDiv);
+        function testimonyInput(id, placeholder, onchange = undefined) {
+            const input = document.createElement('input');
+            input.id = id;
+            input.autocomplete = 'on';
+            input.className = 'hil-themed hil-row-textbox v-size--default v-sheet--outlined hil-themed-text ' + theme;
+            input.style.width = '10rem';
+            input.placeholder = placeholder;
+    
+            input.addEventListener('click', () => input.setSelectionRange(0, input.value.length));
+            if (onchange) input.addEventListener('change', onchange);
+    
+            inputRow.appendChild(input);
+            return input;
+        }
+        const musicInput = testimonyInput('hil-tm-music', 'Testimony music #bgm', () => musicPlaying = false);
+        const selectInput = testimonyInput('hil-tm-select', 'CE statement #bgs');
 
-        musicInput.addEventListener('click', () => musicInput.setSelectionRange(0, musicInput.value.length));
-        musicInput.addEventListener('change', () => musicPlaying = false);
+        function inputToTag(value, tagName) {
+            const match = value.match(/[0-9]+/g)
+            if (match && ('[#' + tagName + '0]').includes(value.replaceAll(/[0-9]+/g, '0'))) {
+                const id = match[0];
+                return '[#' + tagName + id + ']';
+            } else {
+                return '';
+            }
+        }
 
-        testimonyRow.appendChild(musicInput);
-
-
-        configDiv.appendChild(iconToggleButton(function() { return auto = !auto; }, 'Use < > from chat', 'hil-testiony-btn'));
-        configDiv.appendChild(iconToggleButton(function() {
+        testimonyRow.appendChild(iconToggleButton(function() {
             red = !red;
             if (testimonyDiv.childElementCount > 0) {
                 if (red) {
@@ -545,7 +557,8 @@ function onload(options) {
             }
             return red;
         }, 'Red Beginning/End', 'hil-testiony-btn'));
-        configDiv.appendChild(iconToggleButton(function() { return crossExam = !crossExam; }, 'Cross-exam mode', 'hil-testiony-btn'));
+        testimonyRow.appendChild(iconToggleButton(function() { return crossExam = !crossExam; }, 'Cross-exam mode', 'hil-testiony-btn'));
+        testimonyRow.appendChild(iconToggleButton(function() { return auto = !auto; }, 'Use < > from chat', 'hil-testiony-btn'));
 
 
         function toStatement(statement) {
@@ -575,22 +588,23 @@ function onload(options) {
             }
 
             const statementText = statements[statement];
-            const music = musicInput.value;
+            const music = inputToTag(musicInput.value, 'bgm');
+            const continueSound = inputToTag(selectInput.value, 'bgs');
 
             let text = statementText;
 
-            let colorTag;
+            let preText;
             if (red && (statement == 0 || statement == statements.length - 1)) {
-                colorTag = '[##nt][#/r]';
+                preText = '[##nt][#/r]';
             } else if (crossExam) {
-                colorTag = '[#/g]';
+                preText = continueSound + '[#/g]';
                 text = text.replaceAll(/\[#.*?\]/g, '');
             }
-            if (colorTag) {
-                text = colorTag + text + '[/#]';
+            if (preText) {
+                text = preText + text + '[/#]';
             }
 
-            if (statement == statements.length - 1) {
+            if (!crossExam && statement == statements.length - 1) {
                 if (red) {
                     text = TAG_MUSIC_FADE_OUT + text;
                     musicPlaying = false;
@@ -601,7 +615,7 @@ function onload(options) {
             } else if (!musicPlaying && music && (!red || statement != 0)) {
                 text = music + text;
                 musicPlaying = true;
-            } else if (statement == 0 && music) {
+            } else if (!crossExam && statement == 0 && music) {
                 text = TAG_MUSIC_STOP + text;
                 musicPlaying = false;
             }
@@ -707,15 +721,18 @@ function onload(options) {
         }).observe(document.querySelector('div.col-sm-3.col-2 div.icon-character'), { childList: true });
 
         testimonyFuncs.arrow = function(arrow) {
-            if (testimonyMode && testimonyLocked && auto) {
+            if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
                 if (arrow == '>') nextStatement();
                 else if (arrow == '<') prevStatement();
             }
         }
         testimonyFuncs.index = function(statement) {
-            if (testimonyMode && testimonyLocked && auto) {
-                const statementI = statement - 1;
-                if (statementI < 0 || statementI >= statements.length) return;
+            if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
+                let statementI = statement - 1;
+                if (red) statementI += 1;
+                let max = statements.length;
+                if (red) max -= 1;
+                if (statementI < 0 || statementI >= max) return;
                 toStatement(statementI);
             }
         }
@@ -1388,7 +1405,6 @@ function onload(options) {
         chrome.runtime.onMessage.addListener(function(event) {
             const [ action, data ] = event;
             if (action == "save-asset") {
-                console.log(data.menuItemId, data.linkUrl);
                 let buttonTitle;
                 if (data.menuItemId == 'hil-save-sound') buttonTitle = 'Sound';
                 if (data.menuItemId == 'hil-save-music') buttonTitle = 'Music';
