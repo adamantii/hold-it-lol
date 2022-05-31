@@ -30,8 +30,13 @@ let modifierKeys = {};
 let theme;
 let textArea;
 
-let optionsLoaded;
 let options;
+let optionsLoaded = new Promise(function(resolve, reject) {
+    chrome.storage.local.get('options', function(result) {
+        options = result.options || {};
+        resolve(options);
+    });
+});
 // Socket options: testimony-mode, no-talk-toggle, smart-pre, smart-tn, mute-character, now-playing, custom-log
 
 
@@ -157,10 +162,13 @@ function optionSet(key, value) {
 
 
 
-function onload(options) {
+function onLoad(options) {
 
 
-    console.log('holdit.lol - running onload()');
+    console.log('holdit.lol - running main()');
+    
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['mute-character']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
+    if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
 
     const showTutorial = !options['seen-tutorial'] || !(Object.values(options).filter(x => x).length > 1);
 
@@ -379,15 +387,18 @@ function onload(options) {
         testimonyDiv.style.cssText = 'display: none; width: 100%; height: 600px; overflow: auto; padding: 5px 0px; margin: 0; border: #7f3e44 1px solid;';
         textArea.parentElement.appendChild(testimonyDiv);
 
-        let origText;
         let statements;
-        let poseElems = {};
-        let poseNames = {};
         let currentStatement;
-
+        let statementCache = {};
+        let lastStatementId = 0;
+        function resetCache() {
+            statementCache = {};
+            lastStatementId = 0;
+            window.postMessage(['clear_testimony_poses']);
+        }
+        
         let musicPlaying = false;
-        let origColor;
-
+        
         let auto = false;
         let red = false;
         let crossExam = false;
@@ -410,16 +421,13 @@ function onload(options) {
                 statements = testimonyArea.value.split('\n').filter(e => e.trim());
                 origText = statements.join('\n');
 
-                let resetPoses = true;
+                let toResetCache = true;
                 for (let statement of statements) {
-                    if (!(statement in poseElems)) continue;
-                    resetPoses = false;
+                    if (!(statement in statementCache)) continue;
+                    toResetCache = false;
                     break;
                 }
-                if (resetPoses) {
-                    poseElems = {};
-                    poseNames = {};
-                }
+                if (toResetCache) resetCache();
 
                 testimonyDiv.textContent = '';
                 for (let i = 0; i < statements.length; i++) {
@@ -440,8 +448,8 @@ function onload(options) {
                     const pose = document.createElement('div');
                     pose.className = 'hil-themed pose-message v-messages v-messages__message ' + theme;
                     pose.style.cssText = 'position: absolute;';
-                    if (statement in poseElems) {
-                        let poseName = poseNames[statement];
+                    if (statement in statementCache) {
+                        let poseName = statementCache[statement].poseName;
                         if (!poseName) poseName = UNDEFINED_POSE_NAME;
                         pose.innerText = poseName;
                         pose.dataset.pose = poseName;
@@ -451,8 +459,12 @@ function onload(options) {
                     pose.addEventListener('click', () => {
                         pose.dataset.pose = '';
                         pose.innerText = '';
-                        delete poseElems[statement];
-                        delete poseNames[statement];
+                        if (statementCache[statement] === undefined) return;
+                        delete statementCache[statement].poseName;
+                        window.postMessage([
+                            'clear_testimony_pose',
+                            statementCache[statement].id,
+                        ]);
                     });
                     div.appendChild(pose);
 
@@ -561,6 +573,13 @@ function onload(options) {
         testimonyRow.appendChild(iconToggleButton(function() { return auto = !auto; }, 'Use < > from chat', 'hil-testiony-btn'));
 
 
+        function setElemPoseName(statementElem, name) {
+            statementElem.querySelector('div.pose-message').innerText = name;
+            statementElem.querySelector('div.pose-message').dataset.pose = name;
+            statementElem.style.paddingBottom = '16px';
+            statementElem.style.marginBottom = '9px';
+        }
+
         function toStatement(statement) {
             let statementElem;
             if (currentStatement != statement) {
@@ -620,47 +639,33 @@ function onload(options) {
                 musicPlaying = false;
             }
 
-            if (poseElems[statementText]) {
-                poseElems[statementText].click();
-            } else {
-                if (document.querySelector('img.pointer-item.p-image.selected')) {
-
-                    const elem = document.querySelector('img.pointer-item.p-image.selected');
-                    if (elem) {
-                        statementElem.querySelector('div.pose-message').dataset.pose = UNDEFINED_POSE_NAME;
-
-                        poseElems[statementText] = elem;
-                        elem.dispatchEvent(new Event('mouseenter'));
-                        setTimeout(function () {
-                            if (testimonyDiv.querySelector('div[style*="background-color:"]') === statementElem && document.querySelector('img.pointer-item.p-image.selected') === elem) {
-                                let poseName = document.querySelector('div.v-tooltip__content.menuable__content__active').firstElementChild.innerText.trim();
-                                poseNames[statementText] = poseName;
-                                statementElem.querySelector('div.pose-message').innerText = poseName;
-                                statementElem.querySelector('div.pose-message').dataset.pose = poseName;
-                                elem.dispatchEvent(new Event('mouseleave'));
-                            } else if (statementElem.querySelector('div.pose-message').dataset.pose == UNDEFINED_POSE_NAME) {
-                                statementElem.querySelector('div.pose-message').innerText = UNDEFINED_POSE_NAME;
-                            }
-                        }, 500);
-                    }
-
-                } else if (document.querySelector('.v-text-field--outlined.v-text-field--is-booted:not(.v-autocomplete)')) {
-
-                    const elemInput = document.querySelector('.v-text-field--outlined.v-text-field--is-booted:not(.v-autocomplete)');
-                    const elem = document.querySelector('.v-list[data-' + Object.keys(elemInput.dataset)[0] + '] .v-list-item--active');
-                    poseElems[statementText] = elem;
-                    let poseName = elem.querySelector(':scope .v-list-item__title').textContent.trim();
-                    poseNames[statementText] = poseName;
-                    statementElem.querySelector('div.pose-message').innerText = poseName;
-                    statementElem.querySelector('div.pose-message').dataset.pose = poseName;
-
+            if (statementCache[statementText] === undefined) {
+                statementCache[statementText] = {
+                    id: lastStatementId
                 }
-                statementElem.style.paddingBottom = '16px';
-                statementElem.style.marginBottom = '9px';
+                lastStatementId += 1;
+            } else if (statementCache[statementText].poseName) {
+                setElemPoseName(statementElem, statementCache[statementText].poseName);
             }
 
+            text = '[##tmid' + statementCache[statementText].id + ']' + text;
             sendText(text);
         }
+
+        window.addEventListener('message', function(event) {
+            const [action, data] = event.data;
+            if (action !== 'set_statement_pose_name') return;
+            const statementText = Object.keys(statementCache).find(text => statementCache[text].id === data.id);
+            const statementObj = statementCache[statementText];
+            statementObj.poseName = data.name;
+
+            if (!testimonyLocked) return;
+
+            for (let statementElem of testimonyDiv.children) {
+                if (statementElem.querySelector('span').innerText !== statementText) continue;
+                setElemPoseName(statementElem, data.name);
+            }            
+        });
 
         function loopTo(statement) { toStatement(statement); }
 
@@ -692,11 +697,11 @@ function onload(options) {
             for (let mutation of mutations) {
                 if (mutation.attributeName != "style" || mutation.oldValue == undefined) continue;
 
-                const oldValue = mutation.oldValue.match(/background-image: (url\(\".*?\"\));/)[1];
-                const newValue = mutation.target.style.backgroundImage;
-                if (oldValue !== newValue) {
-                    poseElems = {};
-                    poseNames = {};
+                const oldIcon = mutation.oldValue.match(/background-image: (url\(\".*?\"\));/)[1];
+                const newIcon = mutation.target.style.backgroundImage;
+                console.log(oldIcon, newIcon);
+                if (oldIcon !== newIcon) {
+                    resetCache();
                     for (let elem of document.querySelectorAll('.pose-message')) {
                         elem.dataset.pose = '';
                         elem.innerText = '';
@@ -1430,97 +1435,35 @@ function onload(options) {
 
 }
 
-optionsLoaded = new Promise(function(resolve, reject) {
-    chrome.storage.local.get('options', function(result) {
-        options = result.options || {};
-        resolve(options);
-    });
+
+
+window.addEventListener('message', function(event) {
+    const [action, data] = event.data;
+    
+    if (action === 'wrapper_loaded') {
+        optionsLoaded.then(function(options) {
+            window.postMessage([
+                'set_options',
+                options
+            ]);
+        });
+    }
 });
 
 
-{
-    const scriptQueue = [];
-    const scriptSrcs = new Map();
-    function restartQueuedScript() {
-        const script = scriptQueue.shift();
-        let resetNode;
-        if (scriptSrcs.get(script).includes('probe_room')) {
-            resetNode = document.createElement('script');
-            resetNode.textContent = scriptSrcs.get(script).replace(
-                'this.$socket.emit("probe_room',
-                'window.socketComponent=this;window.postMessage(["socket_loaded"]);this.$socket.emit("probe_room',
-            );
-        } else {
-            resetNode = script.cloneNode();
-            resetNode.type = '';
-        }
-        script.parentElement.insertBefore(resetNode, script);
-        script.remove();
-        scriptSrcs.delete(script);
-        
-        if (scriptQueue.length > 0 && scriptQueue[0].dataset.hilIgnore === '1') restartQueuedScript();
+window.addEventListener('load', tryMain);
+
+chrome.runtime.onMessage.addListener(function(event) {
+    const [ action, data ] = event;
+    if (action == "loaded") {
+        tryMain();
     }
-
-    const observer = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-            mutation.addedNodes.forEach((node) => {
-                if (node.nodeType === 1 && node.tagName == 'MAIN') tryMain();
-                if (node.nodeType === 1 && node.tagName === 'SCRIPT' && node.dataset.hilIgnore !== '1' && node.src && new URL(node.src).host === 'objection.lol') {
-                    const script = node;
-                    script.type = 'javascript/blocked';
-                    scriptQueue.push(script);
-
-                    httpGetAsync(script.src).then(function(response) {
-                        script.dataset.hilIgnore = '1';
-                        scriptSrcs.set(script, response);
-                        if (scriptQueue[0] === script) restartQueuedScript();
-                    })
-                }
-            })
-        })
-    })
-    
-    observer.observe(document.documentElement, {
-        childList: true,
-        subtree: true
-    })
-
-    window.addEventListener('message', function(event) {
-        const [action, data] = event.data;
-        
-        switch (action) {
-            case 'socket_loaded':
-                console.log('socket_loaded ping');
-                injectScript(chrome.runtime.getURL('inject/socket-wrapper.js'));
-                optionsLoaded.then(function(options) {
-                    if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
-                });
-                break;
-            case 'wrapper_loaded':
-                optionsLoaded.then(function(options) {
-                    window.postMessage([
-                        'set_options',
-                        options
-                    ]);
-                });
-                break;
-        }
-    });
-}
-// window.addEventListener('load', tryMain);
-
-// chrome.runtime.onMessage.addListener(function(event) {
-//     const [ action, data ] = event;
-//     if (action == "loaded") {
-//         tryMain();
-//     }
-// });
-
+});
 
 function tryMain() {
     if (document.querySelector('.frameTextarea')) {
         optionsLoaded.then(function(options) {
-            onload(options);
+            onLoad(options);
         })
     }
 }

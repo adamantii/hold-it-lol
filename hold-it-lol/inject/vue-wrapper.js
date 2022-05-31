@@ -1,12 +1,30 @@
 "use strict";
-const socketStates = {
-    options: {},
-};
 
-function main(socketComponent) {
-    const TN_MIN_DIST = 0.63;
+function main() {
+
+    const socketStates = {
+        options: {},
+    };
     const DEBUGLOGS = true;
-    const socket = socketComponent.$socket;
+
+    const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
+
+    window.postMessage(['wrapper_loaded']);
+    window.addEventListener('message', function(event) {
+        const [action, data] = event.data;
+        if (action == 'set_options') {
+            socketStates.options = data;
+            if (socketStates['options']['testimony-mode']) socketStates.testimonyPoses = {};
+        } else if (action == 'set_socket_state') {
+            for (const key in data) {
+                socketStates[key] = data[key];
+            }
+        } else if (action == 'clear_testimony_poses') {
+            socketStates.testimonyPoses = {};
+        } else if (action == 'clear_testimony_pose') {
+            delete socketStates.testimonyPoses[data];
+        }
+    });
 
     function httpGetAsync(url) {
         return new Promise((resolve, reject) => {
@@ -18,8 +36,6 @@ function main(socketComponent) {
             XMLHttp.send(null);
         });
     }
-
-    window.postMessage(['wrapper_loaded']);
 
     const origOnevent = socket.onevent;
     socket.onevent = function(e) {
@@ -96,11 +112,10 @@ function main(socketComponent) {
                         tnPoses = tnPoses.concat(charPoses.filter(pose => pose.name.includes(substr)));
                     }
                     const [ tnPoseName, distance ] = closestMatch(prevPoseName, tnPoses.map(pose => pose.name));
-                    // log.push([prevPoseName, tnPoseName, distance, ratio]);
                     if (!tnPoseName) return;
                     const ratio = (prevPoseName.length + tnPoseName.length - distance) / (prevPoseName.length + tnPoseName.length);
                     console.log([prevPoseName, tnPoseName, distance, ratio]);
-                    if (ratio < TN_MIN_DIST) return;
+                    if (ratio < 0.63) return;
                     const tnPoseId = charPoses.find(pose => pose.name === tnPoseName).id;
                     const tnFrame = JSON.parse(JSON.stringify(data));
                     tnFrame.poseId = tnPoseId;
@@ -109,6 +124,25 @@ function main(socketComponent) {
                     delay = 1000;
                 })();
             }
+            if (socketStates['options']['testimony-mode']) (function() {
+                const match = /\[##tmid([0-9]+?)\]/g.exec(data.text);
+                if (match === null) return;
+                const statementId = parseInt(match[1]);
+
+                if (socketStates.testimonyPoses[statementId]) {
+                    data.poseId = socketStates.testimonyPoses[statementId];
+                } else {
+                    const poseInstance = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement.__vue__;
+                    socketStates.testimonyPoses[statementId] = poseInstance.currentPoseId;
+                    window.postMessage([
+                        'set_statement_pose_name',
+                        {
+                            id: statementId,
+                            name: poseInstance.characterPoses.find(pose => pose.id === poseInstance.currentPoseId).name,
+                        }
+                    ]);
+                }
+            })();
             socketStates['prev-pose'] = data.poseId;
             socketStates['prev-char'] = data.characterId;
 
@@ -120,17 +154,4 @@ function main(socketComponent) {
     }
 }
 
-window.addEventListener('message', function(event) {
-    const [action, data] = event.data;
-    if (action == 'set_options') socketStates.options = data;
-    if (action == 'set_socket_state') {
-        for (const key in data) {
-            socketStates[key] = data[key];
-        }
-    }
-})
-
-//window.socketComponent defined in content.js intercepting OL's script
-main(window.socketComponent);
-
-console.log('socket_loaded pong');
+main();
