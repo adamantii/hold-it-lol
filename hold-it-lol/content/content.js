@@ -167,8 +167,8 @@ function onLoad(options) {
 
     console.log('holdit.lol - running main()');
     
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['mute-character']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['mute-character']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
 
     const showTutorial = !options['seen-tutorial'] || !(Object.values(options).filter(x => x).length > 1);
 
@@ -699,7 +699,6 @@ function onLoad(options) {
 
                 const oldIcon = mutation.oldValue.match(/background-image: (url\(\".*?\"\));/)[1];
                 const newIcon = mutation.target.style.backgroundImage;
-                console.log(oldIcon, newIcon);
                 if (oldIcon !== newIcon) {
                     resetCache();
                     for (let elem of document.querySelectorAll('.pose-message')) {
@@ -963,6 +962,33 @@ function onLoad(options) {
         const activeToggleClasses = ['v-input--is-label-active', 'v-input--is-dirty', 'primary--text'];
         for (let label of document.querySelectorAll('label')) {
             if (label.textContent !== 'Pre-animate') continue;
+
+            if (options['smart-pre']) {
+                const preToggle = label.parentElement.parentElement.parentElement;
+                const preToggleThumb = preToggle.querySelector('.v-input--switch__thumb');
+                preToggle.addEventListener('click', function() {
+                    window.postMessage(['pre_animate_toggled']);
+                });
+                window.addEventListener('message', function(event) {
+                    const action = event.data[0];
+                    if (action !== 'pre_animate_locked') return;
+                    preToggleThumb.className += ' mdi mdi-lock hil-toggle-thumb-lock';
+                    preToggleThumb.classList.remove('v-input--switch__thumb');
+                });
+                new MutationObserver(function () {
+                    if (!preToggleThumb.classList.contains('hil-toggle-thumb-lock')) return;
+                    preToggleThumb.classList.remove('hil-toggle-thumb-lock');
+                    preToggleThumb.classList.remove('mdi-lock');
+                    preToggleThumb.classList.remove('mdi');
+                    preToggleThumb.classList.add('v-input--switch__thumb');
+                }).observe(document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true,
+                    attributeFilter: [ 'class' ],
+                });
+            }
+
             const flipToggle = label.parentElement.parentElement.parentElement.nextElementSibling;
             
             function createToggle(onchange, text, checked = false) {

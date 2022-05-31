@@ -81,6 +81,14 @@ button.hil-testiony-btn {
     background-color: var(--testimony-color-light)!important;
 }
 
+div.hil-toggle-thumb-lock {
+    transform: translateY(-3px) scale(1.5)!important;
+    color: #bdbdbd;
+}
+div.v-input--is-dirty div.hil-toggle-thumb-lock {
+    transform: translate(20px, -3px) scale(1.5)!important;
+}
+
 .hil-evidence-title {
   margin: 10px 0;
   text-align: center;

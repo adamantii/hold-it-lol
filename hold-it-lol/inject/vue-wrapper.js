@@ -23,6 +23,8 @@ function main() {
             socketStates.testimonyPoses = {};
         } else if (action == 'clear_testimony_pose') {
             delete socketStates.testimonyPoses[data];
+        } else if (action == 'pre_animate_toggled') {
+            delete socketStates['prev-pre-pose'];
         }
     });
 
@@ -83,7 +85,10 @@ function main() {
 
         if (action === 'message') {
             if (socketStates['no-talk'] || data.text.includes('[##nt]')) data.doNotTalk = true;
-            if (socketStates['options']['smart-pre'] && data.poseId === socketStates['prev-pose']) data.poseAnimation = false;
+            if (socketStates['options']['smart-pre']) {
+                if (data.poseAnimation) window.postMessage(['pre_animate_locked']);
+                if (data.poseId === socketStates['prev-pre-pose']) data.poseAnimation = false;
+            }
             if (socketStates['options']['smart-tn'] && data.poseAnimation && socketStates['prev-char'] === data.characterId && data.poseId !== socketStates['prev-pose']) {
                 (function() {
                     let useTN = socketStates['options']['tn-toggle-value'];
@@ -93,11 +98,11 @@ function main() {
 
                     if (socketStates['options']['tn-toggle-on-screen']) {
                         const prevFrame = socketStates['prev-message'].frame;
-                        if (prevFrame.text.match(/\[#evd[0-9]*?\]/g) || prevFrame.characterId !== data.characterId || !(prevFrame.pairId === data.pairId && data.pairId !== null)) return;
+                        if (prevFrame.text.match(/\[#evd[0-9]*?\]/g) || prevFrame.characterId !== data.characterId || (prevFrame.pairId === data.pairId && data.pairId !== null)) return;
                     }
 
                     const patterns = socketStates.options['smart-tn-patterns'] || ['TN'];
-                    const charPoses = socketComponent.$children.find(component => component.currentCharacter).currentCharacter.poses;
+                    const charPoses = document.querySelector('.v-main__wrap > div > div > div > div').__vue__.currentCharacter.poses;
                     const prevPoseName = charPoses.find(pose => pose.id === socketStates['prev-pose']).name;
                     const currentPoseName = charPoses.find(pose => pose.id === data.poseId).name;
                     let poseIsTN = false;
@@ -111,10 +116,10 @@ function main() {
                     for (let substr of patterns) {
                         tnPoses = tnPoses.concat(charPoses.filter(pose => pose.name.includes(substr)));
                     }
+                    if (tnPoses.length === 0) return;
                     const [ tnPoseName, distance ] = closestMatch(prevPoseName, tnPoses.map(pose => pose.name));
                     if (!tnPoseName) return;
                     const ratio = (prevPoseName.length + tnPoseName.length - distance) / (prevPoseName.length + tnPoseName.length);
-                    console.log([prevPoseName, tnPoseName, distance, ratio]);
                     if (ratio < 0.63) return;
                     const tnPoseId = charPoses.find(pose => pose.name === tnPoseName).id;
                     const tnFrame = JSON.parse(JSON.stringify(data));
@@ -143,6 +148,7 @@ function main() {
                     ]);
                 }
             })();
+            if (socketStates['options']['smart-pre']) socketStates['prev-pre-pose'] = data.poseId;
             socketStates['prev-pose'] = data.poseId;
             socketStates['prev-char'] = data.characterId;
 
