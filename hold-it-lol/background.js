@@ -1,9 +1,9 @@
 'use strict';
 
 
-// chrome.webNavigation.onHistoryStateUpdated.addListener(e => {
-//   chrome.tabs.sendMessage( e.tabId, ["loaded"] );
-// }, {url: [{urlMatches: ".*objection\\.lol\\/courtroom\\/..*"}]});
+chrome.webNavigation.onHistoryStateUpdated.addListener(e => {
+  chrome.tabs.sendMessage( e.tabId, ["loaded"] );
+}, {url: [{urlMatches: ".*objection\\.lol\\/courtroom\\/..*"}]});
 
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
