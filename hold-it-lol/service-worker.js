@@ -15,12 +15,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         chrome.contextMenus.create({
             id: 'hil-save-sound',
             title: 'Add as Sound',
-            contexts: ['link'],
+            contexts: [chrome.contextMenus.ContextType.LINK],
+            documentUrlPatterns: ['*://objection.lol/courtroom/*'],
         }, callback);
         chrome.contextMenus.create({
             id: 'hil-save-music',
             title: 'Add as Music',
-            contexts: ['link'],
+            contexts: [chrome.contextMenus.ContextType.LINK],
+            documentUrlPatterns: ['*://objection.lol/courtroom/*'],
         }, callback);
     }
 });
