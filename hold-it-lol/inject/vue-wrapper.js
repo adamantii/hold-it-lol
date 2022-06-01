@@ -3,19 +3,36 @@
 function main() {
 
     const socketStates = {
-        options: {},
-    };
+        options: undefined
+    }
+    socketStates.optionsLoaded = new Promise(function(resolve, reject) {
+        socketStates.optionsLoadedResolve = resolve;
+    });
     const DEBUGLOGS = true;
 
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
-    const characterInstance = document.querySelector('.v-main__wrap > div > div > div > div').__vue__;
+    const characterInstance = document.querySelector('.v-main__wrap > div > div.row > div:nth-child(1) > div').__vue__;
+    const characterListInstance = document.querySelector('div.v-main__wrap > div > div.text-center').__vue__;
     const poseInstance = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement.__vue__;
+    
+    function httpGetAsync(url) {
+        return new Promise((resolve, reject) => {
+            const XMLHttp = new XMLHttpRequest();
+            XMLHttp.onreadystatechange = function () {
+                if (XMLHttp.readyState == 4 && XMLHttp.status == 200) resolve(XMLHttp.responseText);
+            }
+            XMLHttp.open("GET", url, true);
+            XMLHttp.send(null);
+        });
+    }
+
 
     window.postMessage(['wrapper_loaded']);
     window.addEventListener('message', function(event) {
         const [action, data] = event.data;
         if (action == 'set_options') {
             socketStates.options = data;
+            socketStates.optionsLoadedResolve();
             if (socketStates['options']['testimony-mode']) socketStates.testimonyPoses = {};
         } else if (action == 'set_socket_state') {
             for (const key in data) {
@@ -30,16 +47,32 @@ function main() {
         }
     });
 
-    function httpGetAsync(url) {
-        return new Promise((resolve, reject) => {
-            const XMLHttp = new XMLHttpRequest();
-            XMLHttp.onreadystatechange = function () {
-                if (XMLHttp.readyState == 4 && XMLHttp.status == 200) resolve(XMLHttp.responseText);
+    socketStates.optionsLoaded.then(function() {
+        if (socketStates['options']['save-last-character']) {
+            const storedId = localStorage['hil-last-character'];
+            if (storedId >= 1000) {
+                document.querySelector('.icon-character .v-image__image--cover').style.backgroundImage = 'url("/Images/Loading.gif")';
+                let msLeft = 60000;
+                const ccsLoadedInterval = setInterval(function() {
+                    msLeft -= 50;
+                    if (msLeft <= 0) clearInterval(ccsLoadedInterval);
+                    if (characterListInstance.customList.length === 0) return;
+                    characterListInstance.setCustomCharacter(storedId);
+                    clearInterval(ccsLoadedInterval);
+                }, 50);
+            } else if (storedId > 1) {
+                characterListInstance.setCharacter(storedId)
             }
-            XMLHttp.open("GET", url, true);
-            XMLHttp.send(null);
-        });
-    }
+            
+            let lastId;
+            setInterval(function() {
+                if (characterInstance.currentCharacter.id !== lastId) {
+                    lastId = characterInstance.currentCharacter.id;
+                    localStorage['hil-last-character'] = lastId;
+                }
+            }, 100);
+        }
+    });
 
     const origOnevent = socket.onevent;
     socket.onevent = function(e) {
@@ -98,7 +131,7 @@ function main() {
                     useTN = data.text.includes('[##tn]') ? !useTN : useTN;
                     if (!useTN) return;
 
-                    if (socketStates['options']['tn-toggle-on-screen']) {
+                    if (socketStates['options']['tn-toggle-on-screen'] && socketStates['prev-message'] !== undefined) {
                         const prevFrame = socketStates['prev-message'].frame;
                         if (prevFrame.text.match(/\[#evd[0-9]*?\]/g) || prevFrame.characterId !== data.characterId || (prevFrame.pairId === data.pairId && data.pairId !== null)) return;
                     }
