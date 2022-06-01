@@ -419,7 +419,6 @@ function onLoad(options) {
                 testimonyArea.value = testimonyArea.value.trim();
                 currentStatement = undefined;
                 statements = testimonyArea.value.split('\n').filter(e => e.trim());
-                origText = statements.join('\n');
 
                 let toResetCache = true;
                 for (let statement of statements) {
@@ -434,7 +433,7 @@ function onLoad(options) {
                     const statement = statements[i];
 
                     const div = document.createElement('div');
-                    div.style.cssText = 'position: relative; padding: 0px 5px; cursor: pointer;' + DEFAULT_TRANSITION;
+                    div.style.cssText = 'position: relative; padding: 0px 0px 16px 5px; cursor: pointer; margin-bottom: 9px;' + DEFAULT_TRANSITION;
                     div.dataset.statement = i;
 
                     div.addEventListener('click', function () {
@@ -576,8 +575,6 @@ function onLoad(options) {
         function setElemPoseName(statementElem, name) {
             statementElem.querySelector('div.pose-message').innerText = name;
             statementElem.querySelector('div.pose-message').dataset.pose = name;
-            statementElem.style.paddingBottom = '16px';
-            statementElem.style.marginBottom = '9px';
         }
 
         function toStatement(statement) {
@@ -1343,6 +1340,9 @@ function onLoad(options) {
     const chatObserver = new MutationObserver(function () {
         if (options['convert-chat-urls']) {
             for (let messageNode of chat.children) {
+                const messageIcon = messageNode.querySelector('i');
+                if (!messageIcon || !messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) continue;
+
                 const messageTextDiv = messageNode.querySelector('.chat-text');
                 const html = messageTextDiv.innerHTML;
                 if (html.includes('</a>')) continue;

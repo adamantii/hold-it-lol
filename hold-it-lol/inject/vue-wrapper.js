@@ -8,6 +8,8 @@ function main() {
     const DEBUGLOGS = true;
 
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
+    const characterInstance = document.querySelector('.v-main__wrap > div > div > div > div').__vue__;
+    const poseInstance = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement.__vue__;
 
     window.postMessage(['wrapper_loaded']);
     window.addEventListener('message', function(event) {
@@ -89,7 +91,7 @@ function main() {
                 if (data.poseAnimation) window.postMessage(['pre_animate_locked']);
                 if (data.poseId === socketStates['prev-pre-pose']) data.poseAnimation = false;
             }
-            if (socketStates['options']['smart-tn'] && data.poseAnimation && socketStates['prev-char'] === data.characterId && data.poseId !== socketStates['prev-pose']) {
+            if (socketStates['options']['smart-tn'] && data.poseAnimation && socketStates['prev-char-id'] === characterInstance.currentCharacter.id && data.poseId !== socketStates['prev-pose']) {
                 (function() {
                     let useTN = socketStates['options']['tn-toggle-value'];
                     useTN = useTN === undefined ? true : useTN;
@@ -102,7 +104,7 @@ function main() {
                     }
 
                     const patterns = socketStates.options['smart-tn-patterns'] || ['TN'];
-                    const charPoses = document.querySelector('.v-main__wrap > div > div > div > div').__vue__.currentCharacter.poses;
+                    const charPoses = characterInstance.currentCharacter.poses;
                     const prevPoseName = charPoses.find(pose => pose.id === socketStates['prev-pose']).name;
                     const currentPoseName = charPoses.find(pose => pose.id === data.poseId).name;
                     let poseIsTN = false;
@@ -137,7 +139,6 @@ function main() {
                 if (socketStates.testimonyPoses[statementId]) {
                     data.poseId = socketStates.testimonyPoses[statementId];
                 } else {
-                    const poseInstance = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement.__vue__;
                     socketStates.testimonyPoses[statementId] = poseInstance.currentPoseId;
                     window.postMessage([
                         'set_statement_pose_name',
@@ -150,7 +151,7 @@ function main() {
             })();
             if (socketStates['options']['smart-pre']) socketStates['prev-pre-pose'] = data.poseId;
             socketStates['prev-pose'] = data.poseId;
-            socketStates['prev-char'] = data.characterId;
+            socketStates['prev-char'] = characterInstance.currentCharacter.id;
 
             data.text = data.text.replaceAll(/\[##.*?\]/g, '');
         }
