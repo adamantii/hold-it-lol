@@ -2,7 +2,7 @@
 
 
 chrome.webNavigation.onHistoryStateUpdated.addListener(e => {
-  chrome.tabs.sendMessage( e.tabId, ["loaded"] );
+    chrome.tabs.sendMessage( e.tabId, ["courtroom_state_loaded"] );
 }, {url: [{urlMatches: ".*objection\\.lol\\/courtroom\\/..*"}]});
 
 

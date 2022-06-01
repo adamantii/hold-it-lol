@@ -1,42 +1,59 @@
 {
-  "name": "holdit.lol (beta)",
-  "version": "0.5",
-  "description": "Handy objection.lol Courtroom features",
-  "permissions": [
-    "webNavigation",
-    "storage",
-    "tabs",
-    "contextMenus",
-    "*://objection.lol/courtroom/*"
-  ],
-  "content_scripts": [
-    {
-      "matches": ["https://objection.lol/courtroom/*"],
-      "js": ["content/content.js"],
-      "css": ["content/style.css"],
-      "run_at": "document_start"
-    }
-  ],
-  "web_accessible_resources": ["inject/vue-wrapper.js", "inject/closest-match/closest-match.js"],
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
-  },
-  "browser_action": {
-    "default_popup": "popup/popup.html",
-    "default_icon": {
-      "16": "assets/icon16.png",
-      "32": "assets/icon32.png",
-      "48": "assets/icon48.png",
-      "128": "assets/icon128.png"
-    }
-  },
-  "options_page": "options/options.html",
-  "icons": {
-    "16": "assets/icon16.png",
-    "32": "assets/icon32.png",
-    "48": "assets/icon48.png",
-    "128": "assets/icon128.png"
-  },
-  "manifest_version": 2
+    "name": "holdit.lol (beta)",
+    "version": "0.5",
+    "description": "Handy objection.lol Courtroom features",
+    "permissions": [
+        "webNavigation",
+        "storage",
+        "tabs",
+        "contextMenus"
+    ],
+    "host_permissions": [
+        "*://objection.lol/courtroom/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://objection.lol/courtroom/*"
+            ],
+            "js": [
+                "content/content.js"
+            ],
+            "css": [
+                "content/style.css"
+            ],
+            "run_at": "document_start"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "matches": [
+                "*://objection.lol/*"
+            ],
+            "resources": [
+                "inject/vue-wrapper.js",
+                "inject/closest-match/closest-match.js"
+            ]
+        }
+    ],
+    "background": {
+        "service_worker": "service-worker.js"
+    },
+    "options_page": "options/options.html",
+    "icons": {
+        "16": "assets/icon16.png",
+        "32": "assets/icon32.png",
+        "48": "assets/icon48.png",
+        "128": "assets/icon128.png"
+    },
+    "action": {
+        "default_popup": "popup/popup.html",
+        "default_icon": {
+            "16": "assets/icon16.png",
+            "32": "assets/icon32.png",
+            "48": "assets/icon48.png",
+            "128": "assets/icon128.png"
+        }
+    },
+    "manifest_version": 3
 }
