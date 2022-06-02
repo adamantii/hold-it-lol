@@ -40,7 +40,7 @@ let optionsLoaded = new Promise(function(resolve, reject) {
 // Socket options: testimony-mode, no-talk-toggle, smart-pre, smart-tn, mute-character, now-playing, custom-log
 
 
-function clickOff() { app.click(); }
+function clickOff() { app.firstElementChild.click(); }
 
 function testRegex(str, re) {
     const match = str.match(re);
@@ -814,11 +814,9 @@ function onLoad(options) {
     updateSelectionState();
 
     function premakeMenus() {
-        const separateButtons = [];
-        separateButtons.push(document.querySelector('.v-btn__content .mdi-menu'));
-        for (let button of separateButtons) {
-            button.click();
-        }
+        document.body.classList.add('hil-loading-menus');
+
+        document.querySelector('.v-btn__content .mdi-menu').click();
 
         const buttons = document.querySelector('.mdi-palette').parentElement.parentElement.parentElement.querySelectorAll('button');
         for (let button of buttons) {
@@ -908,6 +906,8 @@ function onLoad(options) {
                 }
             }
         }, 1);
+
+        setTimeout(() => document.body.classList.remove('hil-loading-menus'), 2000);
     }
     premakeMenus();
 
@@ -1426,25 +1426,29 @@ function onLoad(options) {
         subtree: true
     });
 
-
-
-    if (options['auto-record']) {
-        const appObserver = new MutationObserver(function (mutationRecord, observer) {
-            for (let mutation of mutationRecord) {
+    {
+        let joinDialogShown = false;
+        new MutationObserver(function (mutations, observer) {
+            for (let mutation of mutations) {
                 for (let node of mutation.removedNodes) {
                     const headline = node.querySelector('.headline');
                     if (!headline || headline.textContent != "Join Courtroom") continue;
-
-                    document.querySelector('i.mdi-video').click();
+                    if (options['auto-record']) document.querySelector('i.mdi-video').click();
                     observer.disconnect();
                 }
+                if (joinDialogShown) continue;
+                for (let node of mutation.addedNodes) {
+                    const headline = node.querySelector('.headline');
+                    if (!headline || headline.textContent != "Join Courtroom") continue;
+                    headline.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('hil-join-dialog');
+                    joinDialogShown = true;
+                }
             }
-        });
-
-        appObserver.observe(app, {
+        }).observe(app, {
             childList: true,
         });
     }
+
 
     if (options['convert-chat-urls']) {
         chrome.runtime.sendMessage(["create-asset-context-menu"]);

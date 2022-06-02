@@ -15,6 +15,10 @@ body.theme--light {
     background: var(--color-l-bg-primary);
 }
 
+body.hil-loading-menus #app > div:not(.v-application--wrap):not(.hil-join-dialog):not(.v-overlay--active) {
+    display: none;
+}
+
 .hil-themed.v-btn:focus:before {
     opacity: 0 !important;
 }
