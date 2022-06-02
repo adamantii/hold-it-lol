@@ -25,7 +25,8 @@ const EVIDENCE_DESC_SEPARATOR = ' | ';
 const EVIDENCE_DESC_TOO_LONG = '… (View doc to read more)';
 
 const sel = document.getSelection();
-let currentSelectionState = {};
+// let currentSelectionState = {};
+let states = {};
 let modifierKeys = {};
 let theme;
 let textArea;
@@ -88,7 +89,7 @@ function getInputContent() {
 function createIcon(iconClass, fontPx, styleText) {
     const icon = document.createElement('i');
     icon.className = 'hil-themed v-icon notranslate mdi ' + theme;
-    icon.classList.add(iconClass);
+    icon.classList.add('mdi-' + iconClass);
     icon.style.cssText = 'font-size: ' + fontPx + 'px;'
     if (styleText) icon.style.cssText += styleText;
     return icon;
@@ -132,7 +133,7 @@ function iconToggleButton(listenerCheck, text, classText, styleText, defaultEnab
         const enabled = listenerCheck();
         toggle(enabled);
     }, text, classText, styleText);
-    button.prepend(createIcon('mdi-close', 18, 'margin-right: 8px;'));
+    button.prepend(createIcon('close', 18, 'margin-right: 8px;'));
     if (defaultEnabled) toggle(true);
     return button;
 }
@@ -144,12 +145,12 @@ function injectScript(src) {
     (document.head || document.documentElement).appendChild(script);
 }
 
-function updateSelectionState() {
-    currentSelectionState.baseNodeDiv = sel.baseNode && (sel.baseNode.nodeType == 1 ? sel.baseNode : sel.baseNode.parentElement);
-    currentSelectionState.baseOffset = sel.baseOffset;
-    currentSelectionState.extentNodeDiv = sel.extentNode && (sel.extentNode.nodeType == 1 ? sel.extentNode : sel.extentNode.parentElement);
-    currentSelectionState.extentOffset = sel.extentOffset;
-}
+// function updateSelectionState() {
+//     currentSelectionState.baseNodeDiv = sel.baseNode && (sel.baseNode.nodeType == 1 ? sel.baseNode : sel.baseNode.parentElement);
+//     currentSelectionState.baseOffset = sel.baseOffset;
+//     currentSelectionState.extentNodeDiv = sel.extentNode && (sel.extentNode.nodeType == 1 ? sel.extentNode : sel.extentNode.parentElement);
+//     currentSelectionState.extentOffset = sel.extentOffset;
+// }
 
 function optionSet(key, value) {
     options[key] = value;
@@ -256,7 +257,7 @@ function onLoad(options) {
     let helperVisible = false;
     let toggleHelperDiv;
     if (showTutorial || options['testimony-mode'] || options['now-playing'] || options['smart-tn'] || options['tts']) {
-        helperToggle = createIcon('mdi-dots-horizontal', 28, 'opacity: 70%; margin-top: 15px; right: calc(-100% + 46px); cursor: pointer;');
+        helperToggle = createIcon('dots-horizontal', 28, 'opacity: 70%; margin-top: 15px; right: calc(-100% + 46px); cursor: pointer;');
         row2.appendChild(helperToggle);
 
         helperDiv = document.createElement('div');
@@ -374,8 +375,6 @@ function onLoad(options) {
     }
 
 
-
-    let testimonyFuncs = {};
     if (options['testimony-mode']) {
         const tabDiv = createTabDiv(TabState.TESTIMONY);
         const testimonyRow = createRow(tabDiv);
@@ -496,11 +495,11 @@ function onLoad(options) {
                 testimonyDiv.style.display = 'none';
 
             }
-        }, '', 'display: none; background-color: #7f3e44 !important; margin: 0 4px;', createIcon('mdi-check', 24));
+        }, '', 'display: none; background-color: #7f3e44 !important; margin: 0 4px;', createIcon('check', 24));
         textButton.parentElement.parentElement.insertBefore(lockTestimony, textButton.parentElement);
 
-        const buttonNextStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('mdi-send', 24));
-        const buttonPrevStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('mdi-send', 24, 'transform: scaleX(-1);'));
+        const buttonNextStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('send', 24));
+        const buttonPrevStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('send', 24, 'transform: scaleX(-1);'));
         primaryDiv.appendChild(buttonPrevStatement);
         primaryDiv.appendChild(buttonNextStatement);
 
@@ -725,13 +724,13 @@ function onLoad(options) {
             }
         }).observe(document.querySelector('div.col-sm-3.col-2 div.icon-character'), { childList: true });
 
-        testimonyFuncs.arrow = function(arrow) {
+        states.testimonyArrow = function(arrow) {
             if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
                 if (arrow == '>') nextStatement();
                 else if (arrow == '<') prevStatement();
             }
         }
-        testimonyFuncs.index = function(statement) {
+        states.testimonyIndex = function(statement) {
             if (TabState.TESTIMONY.enabled && testimonyLocked && auto) {
                 let statementI = statement - 1;
                 if (red) statementI += 1;
@@ -811,7 +810,6 @@ function onLoad(options) {
     const menuTitles = {};
     const assetWindowButtons = {};
     let dualEffectMode = false;
-    updateSelectionState();
 
     function premakeMenus() {
         document.body.classList.add('hil-loading-menus');
@@ -1324,14 +1322,6 @@ function onLoad(options) {
     }
 
 
-
-    if (options['chat-fix']) {
-        document.addEventListener('selectionchange', function () {
-            updateSelectionState();
-        })
-    }
-
-
     if (options['sound-insert']) {
         function checkModifierKeys(event) {
             modifierKeys.shift = event.shiftKey;
@@ -1374,12 +1364,12 @@ function onLoad(options) {
         }
 
         if (options['testimony-mode']) {
-            if (testRegex(messageText, '[> ]*') && messageText.indexOf('>') !== -1) testimonyFuncs.arrow('>');
-            else if (testRegex(messageText, '[< ]*') && messageText.indexOf('<') !== -1) testimonyFuncs.arrow('<');
-            else if (testRegex(messageText, '<[0-9]*?>')) testimonyFuncs.index(Number(messageText.slice(1, -1)));
+            if (testRegex(messageText, '[> ]*') && messageText.indexOf('>') !== -1) states.testimonyArrow('>');
+            else if (testRegex(messageText, '[< ]*') && messageText.indexOf('<') !== -1) states.testimonyArrow('<');
+            else if (testRegex(messageText, '<[0-9]*?>')) states.testimonyIndex(Number(messageText.slice(1, -1)));
         }
 
-        if (options['tts'] && window.ttsEnabled && window.ttsReadLogs && !messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
+        if (options['tts'] && states.ttsEnabled && states.ttsReadLogs && !messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
             if (messageIcon.matches('.mdi-image-search')) {
                 chrome.runtime.sendMessage(["tts-speak", {
                     text: document.querySelector('.v-list-item__title').innerText + ' added "' + messageText.slice(0, -' added as evidence'.length) + '" as evidence.'
@@ -1481,18 +1471,18 @@ function onLoad(options) {
             const tabRow = createRow(tabDiv);
             tabRow.classList.add('hil-tab-row-tts');
 
-            window.ttsEnabled = false;
+            states.ttsEnabled = false;
             let ttsReadNames = true;
-            window.ttsReadLogs = true;
+            states.ttsReadLogs = true;
             tabRow.appendChild(iconToggleButton(function() {
-                window.ttsEnabled = !window.ttsEnabled;
+                states.ttsEnabled = !states.ttsEnabled;
                 window.postMessage(['set_socket_state', {
-                    [ 'tts-enabled' ]: window.ttsEnabled
+                    [ 'tts-enabled' ]: states.ttsEnabled
                 }]);
-                return window.ttsEnabled
+                return states.ttsEnabled
             }, 'Speech enabled', '', 'min-width: 33%;'));
             tabRow.appendChild(iconToggleButton(function() { return ttsReadNames = !ttsReadNames; }, 'Names', '', '', true));
-            tabRow.appendChild(iconToggleButton(function() { return window.ttsReadLogs = !window.ttsReadLogs; }, 'Logs', '', '', true));
+            tabRow.appendChild(iconToggleButton(function() { return states.ttsReadLogs = !states.ttsReadLogs; }, 'Logs', '', '', true));
             
             if (voices.length > 0) {
                 const voiceDropdownButton = document.createElement('div');
@@ -1567,7 +1557,7 @@ function onLoad(options) {
                 const [action, data] = event.data;
                 if (action === 'talking_started') {
 
-                    if (!window.ttsEnabled) return;
+                    if (!states.ttsEnabled) return;
 
                     let text = data.plainText;
                     if (ttsReadNames) text = data.username + ' says; ' + text;
@@ -1599,6 +1589,123 @@ function onLoad(options) {
                 }
             });
         });
+    }
+
+
+    if (options['list-moderation']) {
+        function createTooltip(text) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'v-tooltip__content hil-small-tooltip hil-hide';
+            tooltip.innerText = text;
+            app.appendChild(tooltip);
+            return tooltip;
+        }
+
+        function createActionButton(onclick, iconName, tooltipText = null, classText = '', cssText = '') {
+            const button = document.createElement('button');
+            button.className = classText + ' v-btn v-btn--has-bg hil-userlist-action hil-themed ' + theme;
+            if (cssText) button.style.cssText = cssText;
+            
+            const i = document.createElement('i');
+            i.className = 'v-icon notranslate mdi hil-themed ' + theme;
+            i.classList.add('mdi-' + iconName);
+            button.appendChild(i);
+            
+            if (onclick) button.addEventListener('click', onclick);
+            if (tooltipText) {
+                button.addEventListener('mouseenter', function() {
+                    if (button.tooltip === undefined) button.tooltip = createTooltip(tooltipText);
+                    const rect = button.getClientRects()[0];
+                    button.tooltip.style.left = (rect.x + rect.width / 2 - button.tooltip.clientWidth / 2) + 'px';
+                    button.tooltip.style.top = (rect.y + rect.height + 10) + 'px';
+                    button.tooltip.classList.remove('hil-hide');
+                });
+                button.addEventListener('mouseleave', () => button.tooltip.classList.add('hil-hide'));
+            }
+
+            return button;
+        }
+
+        function moderationMessage(action, userItem) {
+            return window.postMessage([
+                action,
+                userItem.querySelector('.v-list-item__title').innerText,
+            ]);
+        }
+
+        let isOwner = false;
+        let isMod = false;
+        function processUserItem(userItem) {
+            if (userItem.querySelector('.v-list-item__title').innerText === usernameInput.value) return;
+            userItem.appendChild(createActionButton(() => moderationMessage('user_mod', userItem), 'crown', 'Make moderator', 'hil-userlist-mod', isOwner ? '' : 'display: none;'));
+            userItem.appendChild(createActionButton(() => moderationMessage('user_ban', userItem), 'skull', 'Ban', 'hil-userlist-ban', isOwner || isMod ? '' : 'display: none;'));
+            userItem.appendChild(createActionButton(() => moderationMessage('user_mute', userItem), 'volume-medium', 'Mute', 'hil-userlist-mute'));
+            if (options['mute-character']) userItem.appendChild(createActionButton(null, 'eye', 'Hide character', 'hil-userlist-mute-char'));
+        }
+
+        function updateCurrentUserItem() {
+            for (let userItem of userList.children) {
+                if (userItem.querySelector('.v-list-item__title').innerText === usernameInput.value) {
+                    userItem.querySelectorAll('.hil-userlist-action').forEach(button => {
+                        button.tooltip?.remove();
+                        button.remove();
+                    });
+                } else if (userItem.querySelector('.hil-userlist-action') === null) {
+                    processUserItem(userItem);
+                }
+            }
+        }
+
+        let usernameInput;
+        for (let label of document.querySelectorAll('.v-input--dense')) {
+            if (label.innerText !== 'Username') continue;
+            usernameInput = label.parentElement.querySelector('input');
+            break;
+        }
+
+        const userListButton = document.querySelector('.v-icon--left.mdi-account').parentElement.parentElement;
+        let userList;
+        userListButton.addEventListener('click', function() {
+            for (let title of document.querySelectorAll('.v-toolbar__title')) {
+                if (title.innerText !== 'Users') continue;
+
+                userList = title.parentElement.parentElement.parentElement.querySelector('.v-list');
+                for (let userItem of userList.children) {
+                    processUserItem(userItem);
+                }
+                updateCurrentUserItem();
+
+                new MutationObserver(function(mutations) {
+                    for (let mutation of mutations) {
+                        for (let node of mutation.addedNodes) {
+                            processUserItem(node);
+                        }
+                        for (let node of mutation.removedNodes) {
+                            node.querySelectorAll('.hil-userlist-action').forEach(button => button.tooltip?.remove());
+                            updateCurrentUserItem();
+                        }
+                    }
+                }).observe(
+                    userList, { childList: true }
+                );
+
+                break;
+            }
+        });
+
+        window.addEventListener('message', function(event) {
+            const [action, data] = event.data;
+            if (action === 'is_owner') isOwner = true;
+            else if (action === 'is_mod') isMod = true;
+            else if (action === 'is_mid') isMod = false;
+
+            if (!document.contains(userList)) return;
+            
+            if (isOwner) userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.removeProperty('display'));
+            else userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.setProperty('display', 'none'));
+            if (isOwner || isMod) userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.removeProperty('display'));
+            else userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.setProperty('display', 'none'));
+        })
     }
 
 

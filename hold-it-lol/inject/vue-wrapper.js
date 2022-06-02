@@ -5,17 +5,25 @@ function main() {
     const socketStates = {
         options: undefined
     }
+    window.socketStates = socketStates;
     socketStates.optionsLoaded = new Promise(function(resolve, reject) {
         socketStates.optionsLoadedResolve = resolve;
     });
     const DEBUGLOGS = true;
 
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
-    const optionsInstance = document.querySelector('div.mx-auto.v-card--flat.v-sheet').parentElement.__vue__;
+    // const optionsInstance = document.querySelector('div.mx-auto.v-card--flat.v-sheet').parentElement.__vue__;
     const characterInstance = document.querySelector('.v-main__wrap > div > div.row > div:nth-child(1) > div').__vue__;
     const characterListInstance = document.querySelector('div.v-main__wrap > div > div.text-center').__vue__;
+    const userInstance = document.querySelector('.v-main__wrap > div').__vue__;
     const poseInstance = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement.__vue__;
     const frameInstance = document.querySelector('.court-container').parentElement.parentElement.__vue__;
+    let muteInputInstance;
+    for (let label of document.querySelectorAll('.v-input--dense.v-text-field label')) {
+        if (label.textContent !== 'Muted Users') continue;
+        muteInputInstance = label.parentElement.parentElement.parentElement.parentElement.__vue__;
+        break;
+    }
     
 
     function httpGetAsync(url) {
@@ -45,20 +53,37 @@ function main() {
     window.postMessage(['wrapper_loaded']);
     window.addEventListener('message', function(event) {
         const [action, data] = event.data;
-        if (action == 'set_options') {
+        if (action === 'set_options') {
             socketStates.options = data;
             socketStates.optionsLoadedResolve();
             if (socketStates.options['testimony-mode']) socketStates.testimonyPoses = {};
-        } else if (action == 'set_socket_state') {
+        } else if (action === 'set_socket_state') {
             for (const key in data) {
                 socketStates[key] = data[key];
             }
-        } else if (action == 'clear_testimony_poses') {
+        } else if (action === 'clear_testimony_poses') {
             socketStates.testimonyPoses = {};
-        } else if (action == 'clear_testimony_pose') {
+        } else if (action === 'clear_testimony_pose') {
             delete socketStates.testimonyPoses[data];
-        } else if (action == 'pre_animate_toggled') {
+        } else if (action === 'pre_animate_toggled') {
             delete socketStates['prev-pre-pose'];
+        } else if (action === 'user_mute') {
+            const item = muteInputInstance.items.find(item => item.username === data);
+            muteInputInstance.selectItem(item);
+        } else if (action === 'user_ban') {
+            const item = muteInputInstance.items.find(item => item.username === data);
+            if (!item) return;
+            socket.emit('set_bans', socketStates['bans'].concat(item.id));
+        } else if (action === 'user_mod') {
+            const item = muteInputInstance.items.find(item => item.username === data);
+            if (!item) return;
+            const mods = socketStates['mods'];
+            if (mods.includes(item.id)) {
+                mods.splice(mods.indexOf(item.id), 1);
+            } else {
+                mods.push(item.id);
+            }
+            socket.emit('set_mods', mods);
         }
     });
 
@@ -122,6 +147,7 @@ function main() {
         const [ action, data ] = e.data;
 
         if (action === 'receive_message') {
+
             if (socketStates.options['tts'] && socketStates['tts-enabled']) data.frame.frameActions.push({ "actionId": 5 });
             if (socketStates.options['now-playing']) {
                 const musicSpan = document.querySelector('div.hil-tab-row-now-playing > span');
@@ -151,6 +177,25 @@ function main() {
                 }
             }
             socketStates['prev-message'] = data;
+
+        } else if (socketStates.options['list-moderation']) {
+            if (action === 'get_owner_options') {
+                window.postMessage(['is_owner']);
+            } else if (action === 'owner_data') {
+                window.postMessage(['is_owner']);
+                socketStates['mods'] = data.mods;
+                socketStates['bans'] = data.bans.map(user => user.id);
+            } else if (action === 'set_mods') {
+                socketStates['mods'] = data;
+                if (socketStates.options['list-moderation']) {
+                    if (data.includes(userInstance.currentUser.id)) window.postMessage(['is_mod']);
+                    else window.postMessage(['is_mid']);
+                }
+            } else if (action === 'set_bans') {
+                socketStates['bans'] = data.map(user => user.id);
+            } else if (action === 'room_data') {
+                socketStates['mods'] = data.users.filter(user => user.isMod).map(user => user.id);
+            }
         }
 
         origOnevent(e);
