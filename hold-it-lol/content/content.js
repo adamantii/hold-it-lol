@@ -1345,7 +1345,7 @@ function onLoad(options) {
         if (options['convert-chat-urls']) {
             for (let messageNode of chat.children) {
                 const messageIcon = messageNode.querySelector('i');
-                if (!messageIcon || !messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) continue;
+                if (!messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) continue;
 
                 const messageTextDiv = messageNode.querySelector('.chat-text');
                 const html = messageTextDiv.innerHTML;
@@ -1365,6 +1365,7 @@ function onLoad(options) {
         }
 
         const messageNode = chat.lastElementChild;
+        const messageIcon = messageNode.querySelector('i');
         const messageTextDiv = messageNode.querySelector('.chat-text');
         const messageText = messageTextDiv.innerText;
 
@@ -1376,6 +1377,16 @@ function onLoad(options) {
             if (testRegex(messageText, '[> ]*') && messageText.indexOf('>') !== -1) testimonyFuncs.arrow('>');
             else if (testRegex(messageText, '[< ]*') && messageText.indexOf('<') !== -1) testimonyFuncs.arrow('<');
             else if (testRegex(messageText, '<[0-9]*?>')) testimonyFuncs.index(Number(messageText.slice(1, -1)));
+        }
+
+        if (options['tts'] && window.ttsEnabled && window.ttsReadLogs && !messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
+            if (messageIcon.matches('.mdi-image-search')) {
+                chrome.runtime.sendMessage(["tts-speak", {
+                    text: document.querySelector('.v-list-item__title').innerText + ' added "' + messageText.slice(0, -' added as evidence'.length) + '" as evidence.'
+                }]);
+            } else {
+                chrome.runtime.sendMessage(["tts-speak", {text: messageNode.innerText.replaceAll('\n', ' ')}]);
+            }
         }
 
         // if (options['chat-fix']) {
@@ -1466,18 +1477,18 @@ function onLoad(options) {
             const tabRow = createRow(tabDiv);
             tabRow.classList.add('hil-tab-row-tts');
 
-            let ttsEnabled = false;
-            let readNames = true;
-            let readLogs = true;
+            window.ttsEnabled = false;
+            let ttsReadNames = true;
+            window.ttsReadLogs = true;
             tabRow.appendChild(iconToggleButton(function() {
-                ttsEnabled = !ttsEnabled;
+                window.ttsEnabled = !window.ttsEnabled;
                 window.postMessage(['set_socket_state', {
-                    [ 'tts-enabled' ]: ttsEnabled
+                    [ 'tts-enabled' ]: window.ttsEnabled
                 }]);
-                return ttsEnabled
+                return window.ttsEnabled
             }, 'Speech enabled', '', 'min-width: 33%;'));
-            tabRow.appendChild(iconToggleButton(function() { return readNames = !readNames; }, 'Names', '', '', true));
-            tabRow.appendChild(iconToggleButton(function() { return readLogs = !readLogs; }, 'Logs', '', '', true));
+            tabRow.appendChild(iconToggleButton(function() { return ttsReadNames = !ttsReadNames; }, 'Names', '', '', true));
+            tabRow.appendChild(iconToggleButton(function() { return window.ttsReadLogs = !window.ttsReadLogs; }, 'Logs', '', '', true));
             
             if (voices.length > 0) {
                 const voiceDropdownButton = document.createElement('div');
@@ -1552,10 +1563,10 @@ function onLoad(options) {
                 const [action, data] = event.data;
                 if (action === 'talking_started') {
 
-                    if (!ttsEnabled) return;
+                    if (!window.ttsEnabled) return;
 
                     let text = data.plainText;
-                    if (readNames) text = data.username + ' says: ' + text;
+                    if (ttsReadNames) text = data.username + ' says; ' + text;
 
                     if (voices.length > 0 === false) {
                         chrome.runtime.sendMessage(["tts-speak", {text: text}]);
