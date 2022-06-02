@@ -4,40 +4,40 @@ let toggleHovering = null;
 let optionChanged = false;
 const tabs = [
   {
-    title: 'Simple, unobtrusive features',
+    title: 'Unobtrusive features',
     items: [
-      {key: 'auto-record', title: 'Auto-recording', description: 'Automatically record all courtrooms.', preview: 'previews/placeholder.png'},
-      {key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close all formatting menus after you\'ve used them.', preview: 'previews/placeholder.png'},
-      {key: 'menu-hover', title: 'Open menus by hovering', description: 'Open formatting menus by hovering over them as opposed to clicking.', preview: 'previews/placeholder.png'},
-      //{key: 'chat-fix', title: 'Fixed chat log', description: 'Fixes selection and scrolling in the chat log.', preview: 'previews/placeholder.png', preview: 'previews/placeholder.png'},
-      //{key: 'a-d-fix', title: 'Fixed A / D hotkeys', description: 'A and D properly cycle poses from left to right (when using pose icons).', preview: 'previews/placeholder.png'},
-      {key: 'sound-search', title: 'Sounds and music: Fixed search', description: 'Makes the search list a bit quicker (Auto-focus as you type).', preview: 'previews/placeholder.png'},
-      {key: 'auto-mute', title: 'Auto-mute users', description: 'Add a list of Discord usernames of unwanted users to automatically mute when they join.', preview: 'previews/placeholder.png'}, // TODO
-      {key: 'convert-chat-urls', title: 'Clickable chat links', description: 'Chat log URLs become clickable. You can <i>also</i> right click to quickly save sounds & music!', preview: 'previews/placeholder.png'},
+        {key: 'auto-record', title: 'Auto-recording', description: 'Automatically record all courtrooms.', preview: 'previews/placeholder.png'},
+        {key: 'save-last-character', title: 'Remember last character', description: 'The last character you used is selected by default in the next courtroom.', preview: 'previews/placeholder.png'},
+        {key: 'convert-chat-urls', title: 'Clickable chat links', description: 'Chat log URLs become clickable. You can <i>also</i> right click to quickly save sounds & music.', preview: 'previews/placeholder.png'},
+        {key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close all formatting menus after you\'ve used them.', preview: 'previews/placeholder.png'},
+        {key: 'menu-hover', title: 'Open menus by hovering', description: 'Open formatting menus by hovering over them instead of clicking.', preview: 'previews/placeholder.png'},
+        {key: 'ctrl-effects', title: 'Effect hotkeys', description: 'Quickly add the Flash and Shake tags by pressing CTRL + 1, CTRL + 2, or CTRL + 3.', preview: 'previews/placeholder.png'},
+        {key: 'comma-pause', title: 'Quickly typing pauses', description: 'Type , again after a , (or other punctuation marks) to add delays.<br>(Typing more , increases the delay.)', preview: 'previews/placeholder.png'},
+        {key: 'sound-insert', title: 'Sounds and music: Quick inserting', description: 'Add sounds just by clicking on them in the list (without pressing "insert tag")<br>(Hold "SHIFT" to suppress)', preview: 'previews/placeholder.png'},
+        {key: 'sound-search', title: 'Sounds and music: Fixed search', description: 'Makes the search list a bit quicker (Auto-focus as you type).', preview: 'previews/placeholder.png'},
     ],
   },
   {
-    title: 'Medium features',
+    title: 'Medium changes',
     items: [
-      {key: 'dual-button', title: 'Dual effect button', description: 'Insert both Flash and Shake at the same time.', preview: 'previews/placeholder.png'},
-      {key: 'comma-pause', title: 'Quickly typing pauses', description: 'Type , again after a , (or other punctuation marks) to add delays.<br>(Typing more , increases the delay.)', preview: 'previews/placeholder.png'},
-      {key: 'ctrl-effects', title: 'Effect hotkeys', description: 'Quickly add the Flash and Shake tags by pressing CTRL + 1, CTRL + 2, or CTRL + 3.', preview: 'previews/placeholder.png'},
-      {key: 'sound-insert', title: 'Sounds and music: Quick inserting', description: 'Add sounds just by clicking on them in the list (without pressing "insert tag")<br>(Hold "SHIFT" to suppress)', preview: 'previews/placeholder.png'},
-      {key: 'no-talk-toggle', title: '"No talking" toggle', description: 'Disables your character\'s talking animation, just like in Maker.', preview: 'previews/placeholder.png'},
-      {key: 'smart-pre', title: 'Smart pre-animate', description: 'Disables your pose\'s pre-animation until you use a different pose.', preview: 'previews/placeholder.png'},
-      {key: 'smart-tn', title: 'Smart "to normal" poses', description: 'When switching to a new pose, automatically plays the previous pose\'s "to normal" when available.', preview: 'previews/placeholder.png'},
+        {key: 'auto-mute', title: 'Auto-mute users', description: 'Add a list of Discord usernames of unwanted users to automatically mute when they join.', preview: 'previews/placeholder.png'}, // TODO
+        {key: 'dual-button', title: 'Dual effect button', description: 'Insert both Flash and Shake at the same time.', preview: 'previews/placeholder.png'},
+        {key: 'no-talk-toggle', title: '"No talking" toggle', description: 'Disables your character\'s talking animation, just like in Maker.', preview: 'previews/placeholder.png'},
+        {key: 'smart-pre', title: 'Smart pre-animate', description: 'Disables your pose\'s pre-animation until you use a different pose.', preview: 'previews/placeholder.png'},
+        {key: 'smart-tn', title: 'Smart "to normal" poses', description: 'When switching to a new pose, automatically plays the previous pose\'s "to normal" when available.', preview: 'previews/placeholder.png'},
     ],
 },
 {
-    title: 'Major changes',
+    title: 'Major additions',
     items: [
-        {key: 'testimony-mode', title: 'Testimony mode', description: 'A helpful witness testimony player for roleplay.', preview: 'previews/placeholder.png'},
-        {key: 'bulk-evidence', title: 'Add evidence from table (Beta)', description: 'Automatically add lots of evidence via a copy-pasted table from a document.<br>(Works with tables where each evidence takes up a row)', preview: 'previews/placeholder.png'},
+        {key: 'testimony-mode', title: 'Roleplay testimony', description: 'A helpful witness testimony player for roleplay.', preview: 'previews/placeholder.png'},
+        {key: 'bulk-evidence', title: 'Add evidence from table', description: 'Automatically add lots of evidence via a copy-pasted table from a document.<br>(Works with tables where each evidence takes up a row)', preview: 'previews/placeholder.png'},
+        {key: 'tts', title: 'Text-to-speech', description: 'Plays messages using a random wacky text-to-speech voice.', preview: 'previews/placeholder.png'},
+        {key: 'now-playing', title: '"Now playing..." display', description: 'Shows info about the currently playing music.', preview: 'previews/placeholder.png'},
+        //{key: 'dual-wield', title: 'Dual Wield', description: 'Control two paired characters at the same time.', preview: 'previews/placeholder.png'},
+        {key: 'custom-log', title: 'Extra chat log', description: 'A log storing more messages with extra info.', preview: 'previews/placeholder.png'}, // TODO
         {key: 'list-moderation', title: 'Moderate from user list', description: 'Quickly mute, ban anyone or make them a moderator from the user list.', preview: 'previews/placeholder.png'}, // TODO
         {key: 'mute-character', title: 'Mute only character', description: 'Someone\'s character is laggy or unpleasant? Hide just the character, while still seeing their messages.', preview: 'previews/placeholder.png'}, // TODO
-        {key: 'now-playing', title: '"Now playing..." display', description: 'Shows info about the currently playing music.', preview: 'previews/placeholder.png'},
-        {key: 'custom-log', title: 'Extra chat log', description: 'A log storing more messages with extra info.', preview: 'previews/placeholder.png'}, // TODO
-        //{key: 'dual-wield', title: 'Dual Wield', description: 'A mode that lets you control two paired characters at the same time.', preview: 'previews/placeholder.png'},
         //{key: 'chat-moderation', title: 'Mute/ban directly from chat', description: 'Be quick with your moderation by using mute & ban buttons next to user\'s messages.', preview: 'previews/placeholder.png'},
     ],
   },

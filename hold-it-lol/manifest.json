@@ -6,7 +6,8 @@
         "webNavigation",
         "storage",
         "tabs",
-        "contextMenus"
+        "contextMenus",
+        "tts"
     ],
     "host_permissions": [
         "*://objection.lol/courtroom/*"
@@ -22,7 +23,7 @@
             "css": [
                 "content/style.css"
             ],
-            "run_at": "document_start"
+            "run_at": "document_end"
         }
     ],
     "web_accessible_resources": [

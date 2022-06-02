@@ -1,7 +1,22 @@
 :root {
-    --default-transition: .15s cubic-bezier(.25,.8,.5,1);
-    --testimony-color-dark: #552a2e;
-    --testimony-color-light: #be747b;
+    --default-transition: .28s cubic-bezier(.4, 0, .2, 1);
+    --color-testimony-dark: #552a2e;
+    --color-testimony-light: #be747b;
+    --color-d-bg-primary: #121212;
+    --color-d-bg-secondary: #1e1e1e;
+    --color-l-bg-primary: #fff;
+    --color-l-bg-secondary: #fff;
+}
+
+body.theme--dark {
+    background: var(--color-d-bg-primary);
+}
+body.theme--light {
+    background: var(--color-l-bg-primary);
+}
+
+.hil-themed.v-btn:focus:before {
+    opacity: 0 !important;
 }
 
 div.hil-row {
@@ -12,7 +27,7 @@ div.hil-row {
     height: 30px;
 }
 
-.hil-content-row > div {
+.hil-content-row>div {
     position: absolute;
     transition: var(--default-transition);
 }
@@ -21,19 +36,23 @@ hr.hil-row-separator {
     margin-bottom: 10px;
     opacity: 30%;
     border-color: #808080;
-    display: none;
-}
-
-button.hil-row-btn {
-    height: 100%!important;
-    font-weight: normal!important;
-    text-transform: none!important;
-    text-overflow: clip!important;
     transition: var(--default-transition);
 }
 
-button.hil-btn-tab-active {
-    background-color: #777!important;
+.hil-row-btn {
+    height: 100% !important;
+    font-weight: normal !important;
+    text-transform: none !important;
+    text-overflow: clip !important;
+    transition: var(--default-transition) !important;
+}
+
+button.hil-btn-tab-active.theme--dark {
+    background: #444 !important;
+}
+
+button.hil-btn-tab-active.theme--light {
+    background: #ddd !important;
 }
 
 input.hil-row-textbox {
@@ -71,70 +90,165 @@ input.hil-tn-pattern {
 }
 
 button.hil-testiony-btn {
-    flex: 1 1 auto!important;
-    background-color: var(--testimony-color-dark)!important;
-    padding: 0 8px!important;
-    font-size: small!important;
+    flex: 1 1 auto !important;
+    background-color: var(--color-testimony-dark) !important;
+    padding: 0 8px !important;
+    font-size: small !important;
 }
 
 .hil-testiony-btn.theme--light {
-    background-color: var(--testimony-color-light)!important;
+    background-color: var(--color-testimony-light) !important;
+}
+
+.hil-tab-row-tts>button,.hil-tab-row-tts>div {
+    flex: 1;
+}
+
+.hil-voice-dropdown {
+    padding: 0 12.5% !important;
+    min-width: 33%!important;
+}
+
+.hil-voice-dropdown .hil-checkbox-list {
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 800% !important;
+    position: absolute;
+    box-shadow: 0 5px 5px -3px rgb(0 0 0 / 20%), 0 8px 10px 1px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%);
+    transition: var(--default-transition);
+}
+
+.hil-checkbox-list {
+    overflow-y: scroll;
+}
+
+.hil-checkbox-list>div {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: var(--default-transition);
+}
+
+.hil-checkbox-list>div.theme--dark {
+    background: var(--color-d-bg-secondary);
+}
+
+.hil-checkbox-list>div.theme--light {
+    background: var(--color-l-bg-secondary);
+}
+
+.hil-checkbox-list>div.theme--dark:hover {
+    background: #303030;
+}
+
+.hil-checkbox-list>div.theme--light:hover {
+    background: #f6f6f6;
+}
+
+.hil-checkbox-list>div.theme--dark.hil-active {
+    background: #283a4f;
+}
+
+.hil-checkbox-list>div.theme--light.hil-active {
+    background: #e0e9f7;
+}
+
+.hil-checkbox-list>div>i {
+    margin-right: 24px;
+}
+
+.hil-checkbox-list>div>span {
+    font-weight: 400;
 }
 
 div.hil-toggle-thumb-lock {
-    transform: translateY(-3px) scale(1.5)!important;
+    transform: translateY(-3px) scale(1.5) !important;
     color: #bdbdbd;
 }
+
 div.v-input--is-dirty div.hil-toggle-thumb-lock {
-    transform: translate(20px, -3px) scale(1.5)!important;
+    transform: translate(20px, -3px) scale(1.5) !important;
+}
+
+.hil-evidence-card {
+    z-index: 1;
+    position: fixed;
+    width: 400px;
+    transition: var(--default-transition);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.8);
+}
+
+.hil-evidence-card.theme--dark {
+    background-color: var(--color-d-bg-primary);
+}
+
+.hil-evidence-card.theme--light {
+    background-color: var(--color-l-bg-primary);
 }
 
 .hil-evidence-title {
-  margin: 10px 0;
-  text-align: center;
-  width: 100%;
-  font-family: roboto;
-  font-size: 16px;
+    margin: 10px 0;
+    text-align: center;
+    width: 100%;
+    font-family: roboto;
+    font-size: 16px;
 }
+
 .hil-evidence-submit {
-  width: 100%;
-  height: 40px;
-  font-size: 18px;
-  font-family: roboto;
-  cursor: pointer;
+    width: 100%;
+    height: 40px;
+    font-size: 18px;
+    font-family: roboto;
+    cursor: pointer;
 }
+
 .hil-evidence-error {
-  text-align: center;
-  margin: 10px 0;
+    text-align: center;
+    margin: 10px 0;
 }
 
 #hil-evidence-area {
-  height: 400px;
-  margin-bottom: 10px;
-  padding: 5px;
-  overflow: auto;
-  font-family: roboto;
-  border: solid rgba(255, 255, 255, 0.1) thin;
+    height: 400px;
+    margin-bottom: 10px;
+    padding: 5px;
+    overflow: auto;
+    font-family: roboto;
+}
+
+#hil-evidence-area.theme--dark {
+    border: solid rgba(255, 255, 255, 0.2) thin;
+}
+#hil-evidence-area.theme--light {
+    border: solid rgba(0, 0, 0, 0.2) thin;
 }
 
 #hil-evidence-area .hil-evd-error {
-  background-color: #ff525280 !important;
+    background-color: #ff525280 !important;
 }
+
 #hil-evidence-area .hil-evd-warning {
-  background-color: #ff8e0080 !important;
+    background-color: #ff8e0080 !important;
 }
 
 #hil-evidence-area * {
-  font-family: sans-serif !important;
-  color: #fff !important;
+    font-family: sans-serif !important;
+    color: #fff !important;
 }
+
 #hil-evidence-area table {
-  border: none !important;
-  border-collapse: collapse !important;
+    border: none !important;
+    border-collapse: collapse !important;
 }
-#evidence-area td, th {
-  border: solid #777 1px !important;
-  background-color: transparent !important;
-  min-width: 20px;
-  min-height: 20px;
+
+#evidence-area td,
+th {
+    border: solid #777 1px !important;
+    background-color: transparent !important;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.hil-hide {
+    opacity: 0!important;
+    visibility: hidden!important;
 }

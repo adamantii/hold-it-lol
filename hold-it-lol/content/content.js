@@ -3,7 +3,7 @@
 
 
 
-const DEFAULT_TRANSITION = 'transition: .15s cubic-bezier(.25,.8,.5,1);';
+const DEFAULT_TRANSITION = 'transition: .28s cubic-bezier(.4,0,.2,1);';
 
 const MENUS_NOT_AUTO_CLOSE = ['Text Color'];
 const SELECTORS_MENU_HOVER = ['.menuable__content__active', 'div.v-sheet.secondary', 'button.v-app-bar__nav-icon', '.mb-2.col-sm-4.col-md-6.col-lg-3.col-6'];
@@ -160,6 +160,14 @@ function optionSet(key, value) {
     });
 }
 
+function kindaRandomChoice(array, seed = null) {
+    if (seed === null) seed = Math.random();
+    const x = Math.sin(seed++) * 10000; 
+    const random = x - Math.floor(x);
+    const i = Math.floor(random * array.length);
+    return array[i];
+}
+
 
 
 function onLoad(options) {
@@ -216,6 +224,9 @@ function onLoad(options) {
     }
     themeInput.parentElement.parentElement.addEventListener('click', themeUpdate);
 
+    document.body.classList.add('hil-themed');
+    document.body.classList.add(theme);
+
 
     const textBacklog = [];
     function sendText(text, persistent = false) {
@@ -244,12 +255,13 @@ function onLoad(options) {
     let helperDiv;
     let helperVisible = false;
     let toggleHelperDiv;
-    if (showTutorial || options['testimony-mode'] || options['now-playing'] || options['smart-tn']) {
+    if (showTutorial || options['testimony-mode'] || options['now-playing'] || options['smart-tn'] || options['tts']) {
         helperToggle = createIcon('mdi-dots-horizontal', 28, 'opacity: 70%; margin-top: 15px; right: calc(-100% + 46px); cursor: pointer;');
         row2.appendChild(helperToggle);
 
         helperDiv = document.createElement('div');
-        helperDiv.style.cssText = 'display: none; transform: translateY(-10px); opacity: 0; padding: 0 8px 0px;' + DEFAULT_TRANSITION;
+        helperDiv.className = 'hil-hide';
+        helperDiv.style.cssText = 'transform: translateY(-10px); padding: 0 8px 0px;' + DEFAULT_TRANSITION;
         row2.appendChild(helperDiv);
 
         helperToggle.addEventListener('click', function () {
@@ -259,15 +271,11 @@ function onLoad(options) {
         toggleHelperDiv = function (visible) {
             helperVisible = visible;
             if (helperVisible) {
-                helperDiv.style.display = 'block';
-                setTimeout(() => {
-                    helperDiv.style.opacity = '100%';
-                    helperDiv.style.removeProperty('transform');
-                }, 1);
+                helperDiv.classList.remove('hil-hide');
+                helperDiv.style.removeProperty('transform');
             } else {
-                helperDiv.style.opacity = '0%';
+                helperDiv.classList.add('hil-hide');
                 helperDiv.style.transform = 'translateY(-10px)';
-                setTimeout(() => helperDiv.style.display = 'none', 300);
             }
         }
     }
@@ -311,50 +319,46 @@ function onLoad(options) {
 
 
     const TabState = {
-        DEFAULT: {
+        NONE: {
             enabled: true,
             onEnable: function() {
-                tabSeparator.style.removeProperty('display');
+                tabSeparator.classList.add('hil-hide');
             },
             onDisable: function() {
-                tabSeparator.style.display = 'block';
+                tabSeparator.classList.remove('hil-hide');
             }
         },
         TESTIMONY: {},
         TN: {},
+        TTS: {},
     }
     const tabRow = createRow(helperDiv);
 
     const tabSeparator = document.createElement('hr');
-    tabSeparator.className = 'hil-row-separator';
+    tabSeparator.className = 'hil-row-separator hil-hide';
     helperDiv.appendChild(tabSeparator);
     
     const contentRow = createRow(helperDiv);
     contentRow.classList.add('hil-content-row')
-    let tabState = TabState.DEFAULT;
+    let tabState = TabState.NONE;
     function setState(state) {
         if (tabState.onDisable) tabState.onDisable();
         if (tabState.contentDiv) {
-            const style = tabState.contentDiv.style;
-            style.opacity = '0';
-            setTimeout(() => style.display = 'none', 150);
+            tabState.contentDiv.classList.add('hil-hide');
         }
         if (tabState.tabButton) tabState.tabButton.classList.remove('hil-btn-tab-active');
         tabState.enabled = false;
         tabState = state;
         if (tabState.onEnable) tabState.onEnable();
         if (tabState.contentDiv) {
-            tabState.contentDiv.style.opacity = '1';
-            tabState.contentDiv.style.removeProperty('display');
+            tabState.contentDiv.classList.remove('hil-hide');
         }
         if (tabState.tabButton) tabState.tabButton.classList.add('hil-btn-tab-active');
         tabState.enabled = true;
     }
     function createTabDiv(state) {
         const div = document.createElement('div');
-        div.className = 'hil-tab-content';
-        div.style.opacity = '0';
-        div.style.display = 'none';
+        div.className = 'hil-tab-content hil-hide';
         state.contentDiv = div;
         contentRow.appendChild(div);
         return div;
@@ -362,7 +366,7 @@ function onLoad(options) {
     function createTabButton(state, text) {
         const button = createButton(function () {
             if (!state.enabled) setState(state);
-            else setState(TabState.DEFAULT);
+            else setState(TabState.NONE);
         }, text, '', 'flex: 1 1 auto;max-width: 10rem;');
         tabRow.appendChild(button);
         state.tabButton = button;
@@ -524,7 +528,7 @@ function onLoad(options) {
             lockTestimony.style.display = 'none';
             primaryDiv.style.display = 'none';
         }
-        const toggleButton = createTabButton(TabState.TESTIMONY, 'Testimony Mode');
+        createTabButton(TabState.TESTIMONY, 'Testimony Mode');
 
 
         const inputRow = createRow(tabDiv);
@@ -742,10 +746,9 @@ function onLoad(options) {
 
 
     if (options['smart-tn']) {
-        const tnButton = createTabButton(TabState.TN, 'TN animations');
+        createTabButton(TabState.TN, 'TN animations');
         const tnDiv = createTabDiv(TabState.TN);
         const tnRow = createRow(tnDiv);
-        tnRow.classList.add('hil-tab-row-tn')
         
         const description = document.createElement('span');
         description.textContent = 'TN pose name keywords:'
@@ -990,6 +993,10 @@ function onLoad(options) {
             
             function createToggle(onchange, text, checked = false) {
                 const newToggle = flipToggle.cloneNode(true);
+
+                for (let elem of [newToggle, ...newToggle.querySelectorAll('*')]) {
+                    if (elem.className.includes('theme--')) elem.classList.add('hil-themed');
+                }
                 
                 const input = newToggle.querySelector('input');
                 input.removeAttribute('id');
@@ -1123,14 +1130,13 @@ function onLoad(options) {
         const evidenceList = buttonRow.parentElement.parentElement.nextElementSibling.nextElementSibling;
 
         const tabButton = document.createElement('div');
-        tabButton.className = 'hil-evidence-button v-btn v-btn--plain theme--dark v-size--small primary--text';
+        tabButton.className = 'hil-evidence-button v-btn v-btn--plain v-size--small primary--text ' + theme;
         tabButton.style.cssText = 'margin-left: 32px; cursor: pointer';
         const tabSpan = document.createElement('span');
         tabSpan.className = 'v-btn__content';
         tabSpan.textContent = 'Import From Table';
         const tabDiv = document.createElement('div');
-        tabDiv.style.cssText = 'z-index: 1; position: fixed; width: 400px; background-color: #121212; transition: opacity 0.2s; opacity: 0; display: none; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.8);';
-        tabDiv.className = 'hil-evidence-tab';
+        tabDiv.className = 'hil-evidence-card hil-hide hil-themed ' + theme;
         tabButton.appendChild(tabSpan);
         buttonRow.appendChild(tabButton);
         buttonRow.appendChild(tabDiv);
@@ -1139,21 +1145,19 @@ function onLoad(options) {
         document.addEventListener('click', function () {
             if (!tabOpen && document.querySelector('.hil-evidence-button:hover')) {
                 tabOpen = true;
-                tabDiv.style.display = 'block';
-                setTimeout(() => tabDiv.style.opacity = '1', 0);
+                tabDiv.classList.remove('hil-hide');
                 const box = tabButton.getClientRects()[0];
                 tabDiv.style.top = buttonRow.getClientRects()[0].bottom + 'px';
                 tabDiv.style.left = (box.left + box.width / 2 - tabDiv.clientWidth / 2) + 'px';
                 return;
             }
-            if (document.querySelector('.hil-evidence-tab:hover')) return;
+            if (document.querySelector('.hil-evidence-card:hover')) return;
             tabOpen = false;
-            tabDiv.style.opacity = '0';
-            setTimeout(() => tabDiv.style.display = 'none', 200);
+            tabDiv.classList.add('hil-hide');
         });
 
 
-        tabDiv.innerHTML = '<div class="hil-evidence-title">Paste a table here</div><div id="hil-evidence-area" contenteditable="true"></div><div class="hil-evidence-submit v-btn theme--dark">Submit</div><div class="hil-evidence-error error--text"></div>';
+        tabDiv.innerHTML = '<div class="hil-evidence-title">Paste a table here</div><div id="hil-evidence-area" class="hil-themed ' + theme + '" contenteditable="true"></div><div class="hil-evidence-submit v-btn hil-themed ' + theme + '">Submit</div><div class="hil-evidence-error error--text"></div>';
         const pasteArea = tabDiv.querySelector('#hil-evidence-area');
         const error = tabDiv.querySelector('.hil-evidence-error');
 
@@ -1452,6 +1456,133 @@ function onLoad(options) {
                     }
                 }, 250);
             }
+        });
+    }
+
+    if (options['tts']) {
+        chrome.runtime.sendMessage(["tts-get-voices"], function(voices) {
+            createTabButton(TabState.TTS, 'Text-to-speech');
+            const tabDiv = createTabDiv(TabState.TTS);
+            const tabRow = createRow(tabDiv);
+            tabRow.classList.add('hil-tab-row-tts');
+
+            let ttsEnabled = false;
+            let readNames = true;
+            let readLogs = true;
+            tabRow.appendChild(iconToggleButton(function() {
+                ttsEnabled = !ttsEnabled;
+                window.postMessage(['set_socket_state', {
+                    [ 'tts-enabled' ]: ttsEnabled
+                }]);
+                return ttsEnabled
+            }, 'Speech enabled', '', 'min-width: 33%;'));
+            tabRow.appendChild(iconToggleButton(function() { return readNames = !readNames; }, 'Names', '', '', true));
+            tabRow.appendChild(iconToggleButton(function() { return readLogs = !readLogs; }, 'Logs', '', '', true));
+            
+            if (voices.length > 0) {
+                const voiceDropdownButton = document.createElement('div');
+                voiceDropdownButton.className = 'v-btn v-btn--has-bg v-size--default hil-row-btn hil-voice-dropdown hil-themed ' + theme;
+                voiceDropdownButton.innerText = 'Voices used';
+                tabRow.appendChild(voiceDropdownButton);
+                
+                voices.sort(function(voiceA, voiceB) {
+                    const keyA = (voiceA.lang + voiceA.voiceName);
+                    const keyB = (voiceB.lang + voiceB.voiceName);
+                    if (keyA < keyB) return -1;
+                    if (keyA > keyB) return 1;
+                    return 0;
+                });
+                
+                const voiceDropdown = document.createElement('div');
+                voiceDropdown.className = 'hil-checkbox-list';
+                voiceDropdown.style.cssText = 'opacity: 0; display: none;';
+                for (let voice of voices) {
+                    const item = document.createElement('div');
+                    item.className = 'hil-themed ' + theme;
+                    
+                    const i = document.createElement('i');
+                    i.className = 'v-icon notranslate mdi mdi-checkbox-blank-outline hil-themed ' + theme;
+                    item.appendChild(i);
+                    
+                    const span = document.createElement('span');
+                    span.textContent = '(' + voice.lang + ') ' + voice.voiceName;
+                    item.appendChild(span);
+                    
+                    voice.uses = 0;
+                    voice.enabled = false;
+                    function onclick() {
+                        voice.enabled = !voice.enabled;
+                        if (voice.enabled) {
+                            item.className += ' hil-active primary--text';
+                            i.classList.remove('mdi-checkbox-blank-outline');
+                            i.className += ' primary--text mdi-checkbox-marked';
+                        } else {
+                            item.classList.remove('primary--text');
+                            item.classList.remove('hil-active');
+                            i.classList.remove('primary--text');
+                            i.classList.remove('mdi-checkbox-marked');
+                            i.classList.add('mdi-checkbox-blank-outline');
+                        }
+                    }
+                    item.addEventListener('click', onclick);
+                    if (voice.lang.slice(0, 2) === 'en') onclick();
+                    
+                    voiceDropdown.appendChild(item);
+                }
+                voiceDropdownButton.appendChild(voiceDropdown);
+                const firstActive = voiceDropdown.querySelector('.hil-active');
+                if (firstActive) voiceDropdown.scrollTop = firstActive.offsetTop;
+
+                voiceDropdownButton.addEventListener('mouseenter', function() {
+                    voiceDropdown.style.removeProperty('display');
+                    setTimeout(function() {
+                        voiceDropdown.style.removeProperty('opacity');
+                    }, 0);
+                });
+                voiceDropdownButton.addEventListener('mouseleave', function() {
+                    voiceDropdown.style.setProperty('opacity', '0');
+                    setTimeout(function() {
+                        voiceDropdown.style.setProperty('display', 'none');
+                    }, 280);
+                });
+            }
+                
+            const characterVoices = {};
+            window.addEventListener('message', function(event) {
+                const [action, data] = event.data;
+                if (action === 'talking_started') {
+
+                    if (!ttsEnabled) return;
+
+                    let text = data.plainText;
+                    if (readNames) text = data.username + ' says: ' + text;
+
+                    if (voices.length > 0 === false) {
+                        chrome.runtime.sendMessage(["tts-speak", {text: text}]);
+                        return;
+                    }
+                    if (data.characterId in characterVoices === false || characterVoices[data.characterId].voiceObj.enabled === false) {
+                        const enabledVoices = voices.filter(voice => voice.enabled);
+                        let minUses = enabledVoices.reduce(function(min, current) {
+                            return Math.min(min, current.uses);
+                        }, Infinity);
+                        const availableVoices = enabledVoices.filter(voice => voice.uses === minUses);
+
+                        let chosenVoice = kindaRandomChoice(enabledVoices, data.characterId);
+                        if (!availableVoices.includes(chosenVoice)) chosenVoice = kindaRandomChoice(availableVoices, data.characterId);
+                        chosenVoice.uses += 1;
+                        const pitch = Math.random() * (1.15 - 0.85) + 0.85;
+                        characterVoices[data.characterId] = {
+                            voiceName: chosenVoice.voiceName,
+                            pitch,
+                            voiceObj: chosenVoice,
+                        };
+                    }
+                    const { voiceName, pitch } = characterVoices[data.characterId];
+                    chrome.runtime.sendMessage(["tts-speak", {text, voiceName, pitch}]);
+                    
+                }
+            });
         });
     }
 

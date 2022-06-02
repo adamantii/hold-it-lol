@@ -24,6 +24,16 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             contexts: [chrome.contextMenus.ContextType.LINK],
             documentUrlPatterns: ['*://objection.lol/courtroom/*'],
         }, callback);
+    } else if (action === 'tts-get-voices') {
+        chrome.tts.getVoices(function(voices) {
+            sendResponse(voices.map(voice => {
+                return {voiceName: voice.voiceName, lang: voice.lang}
+            }));
+        });
+        return true;
+    } else if (action === 'tts-speak') {
+        const { text, voiceName, pitch } = data;
+        chrome.tts.speak(text, {voiceName, pitch});
     }
 });
 
