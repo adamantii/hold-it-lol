@@ -1601,9 +1601,9 @@ function onLoad(options) {
             return tooltip;
         }
 
-        function createActionButton(onclick, iconName, tooltipText = null, classText = '', cssText = '') {
+        function userActionButton(onclick, iconName, tooltipText = null, classText = '', cssText = '') {
             const button = document.createElement('button');
-            button.className = classText + ' v-btn v-btn--has-bg hil-userlist-action hil-themed ' + theme;
+            button.className = classText + ' v-btn v-btn--has-bg hil-icon-button hil-themed ' + theme;
             if (cssText) button.style.cssText = cssText;
             
             const i = document.createElement('i');
@@ -1626,32 +1626,37 @@ function onLoad(options) {
             return button;
         }
 
-        function moderationMessage(action, userItem) {
+        let isOwner = false;
+        let isMod = false;
+        let mutedCharUsers = [];
+        function userActionButtonSet(usernameElement) {
+            const container = document.createElement('div');
+            container.className = 'hil-user-action-buttons';
+            container.appendChild(userActionButton(() => moderationMessage('user_mod', usernameElement), 'crown', 'Make moderator', 'hil-userlist-mod', isOwner ? '' : 'display: none;'));
+            container.appendChild(userActionButton(() => moderationMessage('user_ban', usernameElement), 'skull', 'Ban', 'hil-userlist-ban', isOwner || isMod ? '' : 'display: none;'));
+            container.appendChild(userActionButton(() => moderationMessage('user_mute', usernameElement), 'volume-medium', 'Mute', 'hil-userlist-mute'));
+            if (options['mute-character']) container.appendChild(userActionButton(() => moderationMessage('user_mute_char', usernameElement), 'eye', 'Hide character', 'hil-userlist-mute-char'));
+            container.removeWithTooltips = function() {
+                container.querySelectorAll('.hil-icon-button').forEach(button => button.tooltip?.remove());
+                container.remove();
+            }
+            return container;
+        }
+
+        function moderationMessage(action, usernameElement) {
             return window.postMessage([
                 action,
-                userItem.querySelector('.v-list-item__title').innerText,
+                usernameElement.innerText,
             ]);
         }
 
-        let isOwner = false;
-        let isMod = false;
-        function processUserItem(userItem) {
-            if (userItem.querySelector('.v-list-item__title').innerText === usernameInput.value) return;
-            userItem.appendChild(createActionButton(() => moderationMessage('user_mod', userItem), 'crown', 'Make moderator', 'hil-userlist-mod', isOwner ? '' : 'display: none;'));
-            userItem.appendChild(createActionButton(() => moderationMessage('user_ban', userItem), 'skull', 'Ban', 'hil-userlist-ban', isOwner || isMod ? '' : 'display: none;'));
-            userItem.appendChild(createActionButton(() => moderationMessage('user_mute', userItem), 'volume-medium', 'Mute', 'hil-userlist-mute'));
-            if (options['mute-character']) userItem.appendChild(createActionButton(null, 'eye', 'Hide character', 'hil-userlist-mute-char'));
-        }
-
+        const processUserListItem = userItem => userItem.appendChild(userActionButtonSet(userItem.querySelector('.v-list-item__title')));
         function updateCurrentUserItem() {
             for (let userItem of userList.children) {
                 if (userItem.querySelector('.v-list-item__title').innerText === usernameInput.value) {
-                    userItem.querySelectorAll('.hil-userlist-action').forEach(button => {
-                        button.tooltip?.remove();
-                        button.remove();
-                    });
-                } else if (userItem.querySelector('.hil-userlist-action') === null) {
-                    processUserItem(userItem);
+                    userItem.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
+                } else if (userItem.querySelector('.hil-user-action-buttons') === null) {
+                    processUserListItem(userItem);
                 }
             }
         }
@@ -1663,25 +1668,25 @@ function onLoad(options) {
             break;
         }
 
-        const userListButton = document.querySelector('.v-icon--left.mdi-account').parentElement.parentElement;
         let userList;
+        const userListButton = document.querySelector('.v-icon--left.mdi-account').parentElement.parentElement;
         userListButton.addEventListener('click', function() {
             for (let title of document.querySelectorAll('.v-toolbar__title')) {
                 if (title.innerText !== 'Users') continue;
 
                 userList = title.parentElement.parentElement.parentElement.querySelector('.v-list');
                 for (let userItem of userList.children) {
-                    processUserItem(userItem);
+                    processUserListItem(userItem);
                 }
                 updateCurrentUserItem();
 
                 new MutationObserver(function(mutations) {
                     for (let mutation of mutations) {
                         for (let node of mutation.addedNodes) {
-                            processUserItem(node);
+                            processUserListItem(node);
                         }
                         for (let node of mutation.removedNodes) {
-                            node.querySelectorAll('.hil-userlist-action').forEach(button => button.tooltip?.remove());
+                            node.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
                             updateCurrentUserItem();
                         }
                     }
@@ -1705,7 +1710,14 @@ function onLoad(options) {
             else userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.setProperty('display', 'none'));
             if (isOwner || isMod) userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.removeProperty('display'));
             else userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.setProperty('display', 'none'));
-        })
+        });
+        if (options['mute-character']) {
+            window.addEventListener('message', function(event) {
+                const [action, data] = event.data;
+                if (action !== 'set_muted_char_usernames') return;
+                mutedCharUsers = data;
+            });
+        }
     }
 
 

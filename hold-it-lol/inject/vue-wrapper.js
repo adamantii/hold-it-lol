@@ -10,6 +10,14 @@ function main() {
         socketStates.optionsLoadedResolve = resolve;
     });
     const DEBUGLOGS = true;
+    const muteCharacters = {
+        defense: {characterId: null, poseId: 1},
+        prosecution: {characterId: null, poseId: 5},
+        witness: {characterId: null, poseId: 142},
+        counsel: {characterId: null, poseId: 45},
+        judge: {characterId: null, poseId: 30},
+        fallback: {characterId: null, poseId: 98},
+    }
 
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
     // const optionsInstance = document.querySelector('div.mx-auto.v-card--flat.v-sheet').parentElement.__vue__;
@@ -37,16 +45,19 @@ function main() {
         });
     }
 
-    function getFrameCharacterId(frame) {
-        if (frame.characterId >= 1000) return frame.characterId;
-
-        const poseId = frame.poseId;
+    function getPresetCharacterFromPose(poseId) {
         const presetChar = characterListInstance.allCharacters.find(
             char => char.poses.find(
                 pose => pose.id === poseId
             ) !== undefined
         );
-        return presetChar.id;
+        if (presetChar) return presetChar;
+        else return null;
+    }
+    function getFrameCharacterId(frame) {
+        if (frame.characterId >= 1000) return frame.characterId;
+
+        return getPresetCharacterFromPose(frame.poseId).id;
     }
 
 
@@ -56,7 +67,6 @@ function main() {
         if (action === 'set_options') {
             socketStates.options = data;
             socketStates.optionsLoadedResolve();
-            if (socketStates.options['testimony-mode']) socketStates.testimonyPoses = {};
         } else if (action === 'set_socket_state') {
             for (const key in data) {
                 socketStates[key] = data[key];
@@ -84,10 +94,26 @@ function main() {
                 mods.push(item.id);
             }
             socket.emit('set_mods', mods);
+        } else if (action === 'user_mute_char') {
+            const item = muteInputInstance.items.find(item => item.username === data);
+            if (!item) return;
+            if (socketStates['mutedCharUsers'].includes(item.id)) {
+                socketStates['mutedCharUsers'].splice(socketStates['mutedCharUsers'].indexOf(item.id), 1);
+            } else {
+                socketStates['mutedCharUsers'].push(item.id);
+            }
+            const presentUsers = muteInputInstance.items.filter(item => socketStates['mutedCharUsers'].includes(item.id));
+            socketStates['mutedCharUsers'] = presentUsers.map(user => user.id);
+            window.postMessage([
+                'set_muted_char_usernames',
+                presentUsers.map(user => user.username),
+            ]);
         }
     });
 
     socketStates.optionsLoaded.then(function() {
+        if (socketStates.options['testimony-mode']) socketStates['testimonyPoses'] = {};
+        if (socketStates.options['mute-character']) socketStates['mutedCharUsers'] = [];
         if (socketStates.options['save-last-character']) {
             const storedId = localStorage['hil-last-character'];
             if (storedId >= 1000) {
@@ -149,6 +175,19 @@ function main() {
         if (action === 'receive_message') {
 
             if (socketStates.options['tts'] && socketStates['tts-enabled']) data.frame.frameActions.push({ "actionId": 5 });
+            if (socketStates.options['mute-character'] && socketStates['mutedCharUsers'].includes(data.userId)) {
+                let muteCharacter;
+                if (frameInstance.customCharacters[data.frame.characterId]) {
+                    muteCharacter = muteCharacters[frameInstance.customCharacters[data.frame.characterId].side];
+                } else if (data.frame.characterId === null) {
+                    muteCharacter = muteCharacters[getPresetCharacterFromPose(data.frame.poseId).side];
+                    // TODO: add extra condition for known paired character's side
+                } else {
+                    muteCharacter = muteCharacters.witness
+                }
+                data.frame.characterId = muteCharacter.characterId;
+                data.frame.poseId = muteCharacter.poseId;
+            }
             if (socketStates.options['now-playing']) {
                 const musicSpan = document.querySelector('div.hil-tab-row-now-playing > span');
                 const match = data.frame.text.match(/\[#bgm(?:[0-9]*?|s|d)\]/g);
@@ -178,7 +217,8 @@ function main() {
             }
             socketStates['prev-message'] = data;
 
-        } else if (socketStates.options['list-moderation']) {
+        }
+        if (socketStates.options['list-moderation']) {
             if (action === 'get_owner_options') {
                 window.postMessage(['is_owner']);
             } else if (action === 'owner_data') {
@@ -195,6 +235,16 @@ function main() {
                 socketStates['bans'] = data.map(user => user.id);
             } else if (action === 'room_data') {
                 socketStates['mods'] = data.users.filter(user => user.isMod).map(user => user.id);
+            }
+        }
+        if (socketStates.options['mute-character']) {
+            if (action === 'change_username' && socketStates['mutedCharUsers'].includes(data.userId)) {
+                const presentUsers = muteInputInstance.items.filter(item => socketStates['mutedCharUsers'].includes(item.id));
+                presentUsers.find(user => user.id === data.userId).username = data.username;
+                window.postMessage([
+                    'set_muted_char_usernames',
+                    presentUsers.map(user => user.username),
+                ]);
             }
         }
 
