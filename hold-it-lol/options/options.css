@@ -9,6 +9,7 @@
     --color-bg-secondary: #1e1e1e;
     --color-gray: #3D3D3D;
     --color-error: #ff5252;
+    --color-separator-line: rgba(255, 255, 255, 0.12);
     --switch-color-off-primary: #fff;
     --transition-duration: .2s;
     --header-height: 64px;
@@ -19,156 +20,188 @@
 }
 
 html {
-  color:  #fff;
-  font-family: 'Roboto', sans-serif;
+    color: #fff;
 }
 
 body {
-  margin: 0;
-  background-color: var(--color-bg-primary);
-  font-size: 100%;
+    margin: 0;
+    background: var(--color-bg-primary);
+    font-family: 'Roboto', sans-serif;
+    font-size: 100%;
+    font-weight: 300;
 }
 
 .header {
-  display: flex;
-  background-color: var(--color-primary);
-  width: 100%;
-  height: var(--header-height);
+    display: flex;
+    background: var(--color-primary);
+    width: 100%;
+    height: var(--header-height);
 }
 
 .header-section {
-  flex: 1 1 auto;
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 20px;
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 20px;
 }
 
 .header-title {
-  font-size: 20px;
-  font-weight: 300;
-  color: #fff;
+    font-size: 20px;
+    font-weight: 300;
+    color: #fff;
 }
 
 .main {
-  max-width: var(--main-width);
-  height: calc(100vh - var(--header-height));
-  margin: 0 auto;
-  background-color: var(--color-bg-secondary);
-  box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px 0px, rgba(0, 0, 0, 0.15) 0px 1px 3px 1px;
-  overflow-y: scroll;
-  overflow-x: clip;
+    max-width: var(--main-width);
+    height: calc(100vh - var(--header-height));
+    margin: 0 auto;
+    background: var(--color-bg-secondary);
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px 0px, rgba(0, 0, 0, 0.15) 0px 1px 3px 1px;
+    overflow-y: scroll;
+    overflow-x: clip;
 }
 
 .row {
-  display: flex;
-  align-items: center;
-  width: inherit;
-  height: var(--row-height);
-  transition: background-color var(--transition-duration);
+    display: flex;
+    align-items: center;
+    width: inherit;
+    height: var(--row-height);
+    transition: background-color var(--transition-duration);
 }
 
 .row.heading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 40px;
-  font-weight:300;
-  height: 160px;
+    justify-content: center;
+    text-align: center;
+    font-size: 40px;
+    font-weight: 300;
+    height: 160px;
+}
+
+.row.subheading {
+    padding: 0 calc(var(--row-padding-x)*2);
+    justify-content: center;
+    text-align: center;
+    line-height: 1.5;
+    font-size: 20px;
+    height: 100px;
 }
 
 .row.hoverable:hover {
-  background-color: rgba(255, 255, 255, 3%);
+    background: rgba(255, 255, 255, 3%);
 }
 
 .row-tab {
-  height: var(--row-height);
-  padding: var(--row-padding-y) var(--row-padding-x);
-  font-size: 20px;
-  font-weight: 300;
-  cursor: pointer;
+    height: var(--row-height);
+    padding: var(--row-padding-y) var(--row-padding-x);
+    font-size: 20px;
+    font-weight: 300;
+    cursor: pointer;
 }
 
-.row-tab > span {
-  margin-left: calc(var(--row-padding-x) * 0.5);
+.row-tab>span {
+    margin-left: calc(var(--row-padding-x) * 0.5);
 }
 
 .row-tab .tab-arrow {
-  width: 24px;
-  height: 24px;
-  margin-left: auto;
-  transition: transform .3s;
+    width: 24px;
+    height: 24px;
+    margin-left: auto;
+    transition: transform .3s;
 }
 
 .row-tab.expanded .tab-arrow {
-  transform: rotate(180deg);
+    transform: rotate(180deg);
 }
 
 .tab-section {
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height .3s ease-out;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height .3s ease-out;
 }
 
 .row-option {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  padding: var(--row-padding-y) var(--row-padding-x);
-  position: relative;
+    border-bottom: 1px solid var(--color-separator-line);
+    padding: var(--row-padding-y) var(--row-padding-x);
+    position: relative;
 }
 
 .label-container {
-  max-width: calc(var(--main-width) / 1.25);
+    max-width: calc(var(--main-width) / 1.25);
 }
 
 .option-label {
-  font-weight: 400;
+    font-weight: 400;
 }
 
 .option-label.option-desc {
-  opacity: 40%;
-  margin-top: 4px;
-  font-weight: 300;
+    opacity: 40%;
+    margin-top: 4px;
+    font-weight: 300;
+}
+
+.row-option .hil-toggle {
+    position: absolute;
+    left: unset;
+    right: calc(var(--row-padding-x) - var(--switch-use-radius) / 2);
+}
+
+div.option-indent {
+    height: 100%;
+    width: 1px;
+    background: var(--color-separator-line);
+    margin-right: var(--row-padding-x);
+}
+
+.row-option > * {
+    transition: opacity var(--transition-duration);
+}
+
+.row-option.row-disabled > *:not(.preview):not(.option-indent) {
+    opacity: 0.5;
 }
 
 .preview {
-  position: fixed;
-  left: var(--left);
-  width: calc(100vw - var(--left));
-  transition: opacity var(--transition-duration);
-  opacity: 0;
-  user-select: none;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.8);
-  z-index: 10;
-  pointer-events: none;
+    position: fixed;
+    left: var(--left);
+    width: calc(100vw - var(--left));
+    transition: opacity var(--transition-duration);
+    opacity: 0;
+    user-select: none;
+    background: var(--color-bg-primary);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.8);
+    z-index: 10;
+    pointer-events: none;
 }
 
 .preview * {
-  width: inherit;
+    width: inherit;
 }
 
 .preview img {
-  box-sizing: border-box;
-  border: 10px solid var(--color-bg-primary);
-  -webkit-user-drag: none;
+    box-sizing: border-box;
+    border: 10px solid var(--color-bg-primary);
+    -webkit-user-drag: none;
 }
 
 .preview div {
-  background-color: var(--color-bg-primary);
-  display: flex;
-  align-items: center;
-  padding-left: 25px;
-  font-size: 20px;
-  font-weight: 300;
+    background: var(--color-bg-primary);
+    display: flex;
+    align-items: center;
+    padding-left: 25px;
+    font-size: 20px;
+    font-weight: 300;
 }
 
 .error {
-  display: flex;
-  justify-content: center;
-  height: var(--header-height);
-  font-size: 20px;
-  background-color: #f55252;
-  align-items: center;
-  width: inherit;
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height .3s ease-out;
+    display: flex;
+    justify-content: center;
+    height: var(--header-height);
+    font-size: 20px;
+    font-weight: 400;
+    background: #f55252;
+    align-items: center;
+    width: inherit;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height .3s ease-out;
 }

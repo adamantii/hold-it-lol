@@ -58,7 +58,7 @@
 .hil-toggle:hover .switch + .handle:before {
     opacity: 0.15;
 }
-.hil-toggle:hover {
+.hil-toggle:not(.force-disabled):hover {
     cursor: pointer;
 }
   
@@ -79,11 +79,11 @@ input + .switch + .handle:before {
     transition: opacity var(--transition-duration);
 }
   
-input:checked + .switch {
+.hil-toggle:not(.force-disabled) input:checked + .switch {
     background-color: var(--switch-color-on-secondary);
 }
   
-input:checked + .switch + .handle {
+.hil-toggle:not(.force-disabled) input:checked + .switch + .handle {
     -webkit-transform: translateX(var(--switch-height));
     -ms-transform: translateX(var(--switch-height));
     transform: translateX(var(--switch-height));
