@@ -127,27 +127,25 @@ function main() {
 
         if (socketStates.options['save-last-character']) {
             const storedId = localStorage['hil-last-character'];
+            let loaded = false;
             if (storedId >= 1000) {
                 document.querySelector('.icon-character .v-image__image--cover').style.backgroundImage = 'url("/Images/Loading.gif")';
-                let msLeft = 60000;
-                const ccsLoadedInterval = setInterval(function() {
-                    msLeft -= 50;
-                    if (msLeft <= 0) clearInterval(ccsLoadedInterval);
-                    if (characterListInstance.customList.length === 0) return;
-                    characterListInstance.setCustomCharacter(storedId);
-                    clearInterval(ccsLoadedInterval);
-                }, 50);
+                const unwatch = characterListInstance.$watch('customCharactersDropdown.length', function(length) {
+                    if (length > 0) {
+                        characterListInstance.setCustomCharacter(storedId);
+                        loaded = true;
+                        unwatch();
+                    }
+                });
             } else if (storedId > 1) {
-                characterListInstance.setCharacter(storedId)
+                characterListInstance.setCharacter(storedId);
+                loaded = true;
             }
             
-            let lastId;
-            setInterval(function() {
-                if (characterInstance.currentCharacter.id !== lastId) {
-                    lastId = characterInstance.currentCharacter.id;
-                    localStorage['hil-last-character'] = lastId;
-                }
-            }, 100);
+            characterInstance.$watch('currentCharacter.id', function(id) {
+                if (!loaded) return;
+                localStorage['hil-last-character'] = id;
+            });
         }
 
         if (socketStates.options['tts']) {
