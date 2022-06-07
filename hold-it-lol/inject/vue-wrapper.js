@@ -26,6 +26,7 @@ function main() {
     const userInstance = document.querySelector('.v-main__wrap > div').__vue__;
     const poseInstance = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement.__vue__;
     const frameInstance = document.querySelector('.court-container').parentElement.parentElement.__vue__;
+    const chatInstance = document.querySelector('.chat').parentElement.__vue__;
     let muteInputInstance;
     for (let label of document.querySelectorAll('.v-select--chips.v-text-field label')) {
         if (label.textContent !== 'Muted Users') continue;
@@ -124,6 +125,7 @@ function main() {
     socketStates.optionsLoaded.then(function() {
         if (socketStates.options['testimony-mode']) socketStates['testimonyPoses'] = {};
         if (socketStates.options['mute-character']) socketStates['mutedCharUsers'] = {};
+        if (socketStates.options['remute']) socketStates['mutedLeftCache'] = {};
 
         if (socketStates.options['save-last-character']) {
             const storedId = localStorage['hil-last-character'];
@@ -404,6 +406,25 @@ function main() {
             }
             socketStates['prev-message'] = data;
 
+        } else if (action === 'user_left') {
+            if (socketStates.options['remute'] && data.discordUsername && muteInputInstance.selectedItems.find(user => user.id === data.id)) {
+                socketStates['mutedLeftCache'][data.discordUsername] = true;
+            }
+        } else if (action === 'user_joined') {
+            if (socketStates.options['remute'] && data.discordUsername && data.discordUsername in socketStates['mutedLeftCache']) {
+                muteInputInstance.selectItem(data.id);
+                delete socketStates['mutedLeftCache'][data.discordUsername];
+                const checkLastMessage = () => {
+                    if (chatInstance.messages[chatInstance.messages.length - 1].text.slice(0, -' joined.'.length) !== data.username) return false;
+                    chatInstance.messages[chatInstance.messages.length - 1].text += ' (Automatically re-muted)';
+                    return true;
+                }
+                if (checkLastMessage() === false) {
+                    const unwatch = chatInstance.$watch('messages', function() {
+                        if (checkLastMessage()) unwatch();
+                    });
+                }
+            }
         }
 
         origOnevent(e);
