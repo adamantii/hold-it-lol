@@ -38,7 +38,6 @@ let optionsLoaded = new Promise(function(resolve, reject) {
         resolve(options);
     });
 });
-// Socket options: testimony-mode, no-talk-toggle, smart-pre, smart-tn, mute-character, now-playing, custom-log
 
 
 function clickOff() { app.firstElementChild.click(); }
@@ -57,6 +56,10 @@ function httpGetAsync(url) {
         XMLHttp.open("GET", url, true);
         XMLHttp.send(null);
     });
+}
+
+function getLabel(innerText) {
+    return [].find.call(document.querySelectorAll('label'), label => label.innerText === innerText);
 }
 
 function setValue(elem, text) {
@@ -86,11 +89,11 @@ function getInputContent() {
     return app.querySelector('.menuable__content__active:not([role="menu"])');
 }
 
-function createIcon(iconClass, fontPx, styleText) {
+function createIcon(iconClass, fontPx = 24, styleText = '', classText = '') {
     const icon = document.createElement('i');
-    icon.className = 'hil-themed v-icon notranslate mdi ' + theme;
+    icon.className = classText + ' hil-themed v-icon notranslate mdi ' + theme;
     icon.classList.add('mdi-' + iconClass);
-    icon.style.cssText = 'font-size: ' + fontPx + 'px;'
+    if (fontPx && fontPx !== 24) icon.style.cssText = 'font-size: ' + fontPx + 'px;'
     if (styleText) icon.style.cssText += styleText;
     return icon;
 }
@@ -177,7 +180,7 @@ function onLoad(options) {
     console.log('holdit.lol - running main()');
     
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['mute-character']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
 
     const showTutorial = !options['seen-tutorial'] || !(Object.values(options).filter(x => x).length > 1);
 
@@ -195,7 +198,7 @@ function onLoad(options) {
     let musicPlaying = false;
 
 
-    const themeInput = row2.querySelector('.pa-2 .mt-2 .col-12').children[1].querySelector('input');
+    const themeInput = getLabel('Dark Mode').parentElement.querySelector('input');
     if (themeInput.ariaChecked == "true") {
         theme = 'theme--dark';
     } else {
@@ -495,10 +498,10 @@ function onLoad(options) {
                 testimonyDiv.style.display = 'none';
 
             }
-        }, '', 'display: none; background-color: #7f3e44 !important; margin: 0 4px;', createIcon('check', 24));
+        }, '', 'display: none; background-color: #7f3e44 !important; margin: 0 4px;', createIcon('check'));
         textButton.parentElement.parentElement.insertBefore(lockTestimony, textButton.parentElement);
 
-        const buttonNextStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('send', 24));
+        const buttonNextStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('send'));
         const buttonPrevStatement = primaryButton(undefined, '', 'background-color: #552a2e !important; margin-left: 4px;', createIcon('send', 24, 'transform: scaleX(-1);'));
         primaryDiv.appendChild(buttonPrevStatement);
         primaryDiv.appendChild(buttonNextStatement);
@@ -1589,135 +1592,6 @@ function onLoad(options) {
                 }
             });
         });
-    }
-
-
-    if (options['list-moderation']) {
-        function createTooltip(text) {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'v-tooltip__content hil-small-tooltip hil-hide';
-            tooltip.innerText = text;
-            app.appendChild(tooltip);
-            return tooltip;
-        }
-
-        function userActionButton(onclick, iconName, tooltipText = null, classText = '', cssText = '') {
-            const button = document.createElement('button');
-            button.className = classText + ' v-btn v-btn--has-bg hil-icon-button hil-themed ' + theme;
-            if (cssText) button.style.cssText = cssText;
-            
-            const i = document.createElement('i');
-            i.className = 'v-icon notranslate mdi hil-themed ' + theme;
-            i.classList.add('mdi-' + iconName);
-            button.appendChild(i);
-            
-            if (onclick) button.addEventListener('click', onclick);
-            if (tooltipText) {
-                button.addEventListener('mouseenter', function() {
-                    if (button.tooltip === undefined) button.tooltip = createTooltip(tooltipText);
-                    const rect = button.getClientRects()[0];
-                    button.tooltip.style.left = (rect.x + rect.width / 2 - button.tooltip.clientWidth / 2) + 'px';
-                    button.tooltip.style.top = (rect.y + rect.height + 10) + 'px';
-                    button.tooltip.classList.remove('hil-hide');
-                });
-                button.addEventListener('mouseleave', () => button.tooltip.classList.add('hil-hide'));
-            }
-
-            return button;
-        }
-
-        let isOwner = false;
-        let isMod = false;
-        let mutedCharUsers = [];
-        function userActionButtonSet(usernameElement) {
-            const container = document.createElement('div');
-            container.className = 'hil-user-action-buttons';
-            container.appendChild(userActionButton(() => moderationMessage('user_mod', usernameElement), 'crown', 'Make moderator', 'hil-userlist-mod', isOwner ? '' : 'display: none;'));
-            container.appendChild(userActionButton(() => moderationMessage('user_ban', usernameElement), 'skull', 'Ban', 'hil-userlist-ban', isOwner || isMod ? '' : 'display: none;'));
-            container.appendChild(userActionButton(() => moderationMessage('user_mute', usernameElement), 'volume-medium', 'Mute', 'hil-userlist-mute'));
-            if (options['mute-character']) container.appendChild(userActionButton(() => moderationMessage('user_mute_char', usernameElement), 'eye', 'Hide character', 'hil-userlist-mute-char'));
-            container.removeWithTooltips = function() {
-                container.querySelectorAll('.hil-icon-button').forEach(button => button.tooltip?.remove());
-                container.remove();
-            }
-            return container;
-        }
-
-        function moderationMessage(action, usernameElement) {
-            return window.postMessage([
-                action,
-                usernameElement.innerText,
-            ]);
-        }
-
-        const processUserListItem = userItem => userItem.appendChild(userActionButtonSet(userItem.querySelector('.v-list-item__title')));
-        function updateCurrentUserItem() {
-            for (let userItem of userList.children) {
-                if (userItem.querySelector('.v-list-item__title').innerText === usernameInput.value) {
-                    userItem.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
-                } else if (userItem.querySelector('.hil-user-action-buttons') === null) {
-                    processUserListItem(userItem);
-                }
-            }
-        }
-
-        let usernameInput;
-        for (let label of document.querySelectorAll('.v-input--dense')) {
-            if (label.innerText !== 'Username') continue;
-            usernameInput = label.parentElement.querySelector('input');
-            break;
-        }
-
-        let userList;
-        const userListButton = document.querySelector('.v-icon--left.mdi-account').parentElement.parentElement;
-        userListButton.addEventListener('click', function() {
-            for (let title of document.querySelectorAll('.v-toolbar__title')) {
-                if (title.innerText !== 'Users') continue;
-
-                userList = title.parentElement.parentElement.parentElement.querySelector('.v-list');
-                for (let userItem of userList.children) {
-                    processUserListItem(userItem);
-                }
-                updateCurrentUserItem();
-
-                new MutationObserver(function(mutations) {
-                    for (let mutation of mutations) {
-                        for (let node of mutation.addedNodes) {
-                            processUserListItem(node);
-                        }
-                        for (let node of mutation.removedNodes) {
-                            node.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
-                            updateCurrentUserItem();
-                        }
-                    }
-                }).observe(
-                    userList, { childList: true }
-                );
-
-                break;
-            }
-        });
-
-        window.addEventListener('message', function(event) {
-            const [action, data] = event.data;
-            if (action === 'is_owner') isOwner = true;
-            else if (action === 'is_mod') isMod = true;
-            else if (action === 'is_mid') isMod = false;
-
-            if (!document.contains(userList)) return;
-            
-            if (isOwner) userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.removeProperty('display'));
-            else userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.setProperty('display', 'none'));
-            if (isOwner || isMod) userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.removeProperty('display'));
-            else userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.setProperty('display', 'none'));
-        });
-        if (options['mute-character']) {
-            window.addEventListener('message', function(event) {
-                const [action, data] = event.data;
-                if (action !== 'set_muted_char_usernames') return;
-                mutedCharUsers = data;
-            });
-        }
     }
 
 

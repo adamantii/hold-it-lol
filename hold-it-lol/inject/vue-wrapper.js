@@ -20,17 +20,26 @@ function main() {
     }
 
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
-    // const optionsInstance = document.querySelector('div.mx-auto.v-card--flat.v-sheet').parentElement.__vue__;
+    const roomInstance = document.querySelector('div.mx-auto.v-card--flat.v-sheet').parentElement.__vue__;
     const characterInstance = document.querySelector('.v-main__wrap > div > div.row > div:nth-child(1) > div').__vue__;
     const characterListInstance = document.querySelector('div.v-main__wrap > div > div.text-center').__vue__;
     const userInstance = document.querySelector('.v-main__wrap > div').__vue__;
     const poseInstance = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement.__vue__;
     const frameInstance = document.querySelector('.court-container').parentElement.parentElement.__vue__;
     let muteInputInstance;
-    for (let label of document.querySelectorAll('.v-input--dense.v-text-field label')) {
+    for (let label of document.querySelectorAll('.v-select--chips.v-text-field label')) {
         if (label.textContent !== 'Muted Users') continue;
         muteInputInstance = label.parentElement.parentElement.parentElement.parentElement.__vue__;
         break;
+    }
+
+    const themeInput = getLabel('Dark Mode').parentElement.querySelector('input');
+    function getTheme() {
+        if (themeInput.ariaChecked == "true") {
+            return 'theme--dark';
+        } else {
+            return 'theme--light';
+        }
     }
     
 
@@ -43,6 +52,19 @@ function main() {
             XMLHttp.open("GET", url, true);
             XMLHttp.send(null);
         });
+    }
+
+    function getLabel(innerText) {
+        return [].find.call(document.querySelectorAll('label'), label => label.innerText === innerText);
+    }
+
+    function createIcon(iconClass, fontPx = 24, styleText = '', classText = '') {
+        const icon = document.createElement('i');
+        icon.className = classText + ' hil-themed v-icon notranslate mdi ' + getTheme();
+        icon.classList.add('mdi-' + iconClass);
+        if (fontPx && fontPx !== 24) icon.style.cssText = 'font-size: ' + fontPx + 'px;'
+        if (styleText) icon.style.cssText += styleText;
+        return icon;
     }
 
     function getPresetCharacterFromPose(poseId) {
@@ -58,6 +80,25 @@ function main() {
         if (frame.characterId >= 1000) return frame.characterId;
 
         return getPresetCharacterFromPose(frame.poseId).id;
+    }
+
+    function createTooltip(text, anchorElement) {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'v-tooltip__content hil-small-tooltip hil-hide';
+        tooltip.textContent = text;
+        tooltip.realign = function(newText = null) {
+            if (anchorElement === undefined) throw Error('Tooltip has no anchor anchorElement');
+            if (newText !== null) tooltip.textContent = newText;
+            const rect = anchorElement.getClientRects()[0];
+            anchorElement.tooltip.style.left = (rect.x + rect.width / 2 - anchorElement.tooltip.clientWidth / 2) + 'px';
+            anchorElement.tooltip.style.top = (rect.y + rect.height + 10) + 'px';
+        }
+        app.appendChild(tooltip);
+        return tooltip;
+    }
+
+    function getIDFromUsername(username, userList = muteInputInstance.items) {
+        return userList.find(user => user.username === username)?.id;
     }
 
 
@@ -77,43 +118,13 @@ function main() {
             delete socketStates.testimonyPoses[data];
         } else if (action === 'pre_animate_toggled') {
             delete socketStates['prev-pre-pose'];
-        } else if (action === 'user_mute') {
-            const item = muteInputInstance.items.find(item => item.username === data);
-            muteInputInstance.selectItem(item);
-        } else if (action === 'user_ban') {
-            const item = muteInputInstance.items.find(item => item.username === data);
-            if (!item) return;
-            socket.emit('set_bans', socketStates['bans'].concat(item.id));
-        } else if (action === 'user_mod') {
-            const item = muteInputInstance.items.find(item => item.username === data);
-            if (!item) return;
-            const mods = socketStates['mods'];
-            if (mods.includes(item.id)) {
-                mods.splice(mods.indexOf(item.id), 1);
-            } else {
-                mods.push(item.id);
-            }
-            socket.emit('set_mods', mods);
-        } else if (action === 'user_mute_char') {
-            const item = muteInputInstance.items.find(item => item.username === data);
-            if (!item) return;
-            if (socketStates['mutedCharUsers'].includes(item.id)) {
-                socketStates['mutedCharUsers'].splice(socketStates['mutedCharUsers'].indexOf(item.id), 1);
-            } else {
-                socketStates['mutedCharUsers'].push(item.id);
-            }
-            const presentUsers = muteInputInstance.items.filter(item => socketStates['mutedCharUsers'].includes(item.id));
-            socketStates['mutedCharUsers'] = presentUsers.map(user => user.id);
-            window.postMessage([
-                'set_muted_char_usernames',
-                presentUsers.map(user => user.username),
-            ]);
         }
     });
 
     socketStates.optionsLoaded.then(function() {
         if (socketStates.options['testimony-mode']) socketStates['testimonyPoses'] = {};
-        if (socketStates.options['mute-character']) socketStates['mutedCharUsers'] = [];
+        if (socketStates.options['mute-character']) socketStates['mutedCharUsers'] = {};
+
         if (socketStates.options['save-last-character']) {
             const storedId = localStorage['hil-last-character'];
             if (storedId >= 1000) {
@@ -164,6 +175,184 @@ function main() {
                 }
             );
         }
+
+        if (socketStates.options['list-moderation']) {
+            function userActionButton(onclick, iconName, tooltipText = null, classText = '', cssText = '') {
+                const button = document.createElement('button');
+                button.className = classText + ' v-btn v-btn--has-bg hil-icon-button hil-themed ' + getTheme();
+                if (cssText) button.style.cssText = cssText;
+                
+                button.appendChild(createIcon(iconName));
+                
+                if (onclick) button.addEventListener('click', () => onclick(button));
+                if (tooltipText) {
+                    button.addEventListener('mouseenter', function() {
+                        if (button.tooltip === undefined) button.tooltip = createTooltip(tooltipText, button);
+                        button.tooltip.realign();
+                        button.tooltip.classList.remove('hil-hide');
+                    });
+                    button.addEventListener('mouseleave', () => button.tooltip.classList.add('hil-hide'));
+                }
+
+                return button;
+            }
+
+            function userActionButtonSet(usernameElement, constantId = false) {
+                const container = document.createElement('div');
+                container.className = 'hil-user-action-buttons';
+
+                const initialId = getIDFromUsername(usernameElement.innerText);
+                const getId = function() {
+                    if (constantId) return initialId;
+                    return getIDFromUsername(usernameElement.innerText);
+                }
+
+                const isMuted = muteInputInstance.selectedItems.find(item => item.username === usernameElement.innerText);
+                const isCharacterMuted = initialId in socketStates['mutedCharUsers'];
+
+                container.appendChild(userActionButton(function() {
+                    const id = getId();
+                    if (id === undefined) return;
+                    
+                    const mods = roomInstance.users.filter(user => user.isMod).map(user => user.id);
+                    if (!mods.includes(id)) mods.push(id);
+                    else mods.splice(mods.indexOf(id), 1);
+
+                    socket.emit('set_mods', mods);
+                }, 'crown', 'Make moderator', 'hil-userlist-mod', userInstance.currentUser.isOwner ? '' : 'display: none;'));
+
+                container.appendChild(userActionButton(function() {
+                    for (let label of document.querySelectorAll('.v-select--chips.v-text-field label')) {
+                        if (label.textContent !== 'Banned Users') continue;
+                        const banInputInstance = label.parentElement.parentElement.parentElement.parentElement.__vue__;
+                        const id = getIDFromUsername(usernameElement.innerText, banInputInstance.items);
+                        if (id === undefined) return;
+                        banInputInstance.selectItem(id);
+                        return;
+                    }
+                }, 'skull', 'Ban', 'hil-userlist-ban', userInstance.currentUser.isOwner || userInstance.currentUser.isMod ? '' : 'display: none;'));
+
+                container.appendChild(userActionButton(function(button) {
+                        const id = getId();
+                        if (id === undefined) return;
+                        muteInputInstance.selectItem(id);
+
+                        const muted = !muteInputInstance.selectedItems.find(item => item.id === id); // Counter-intuitive but trust it
+                        const mutedIndicatorMethod = muted ? 'add' : 'remove';
+                        const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
+                        button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-volume-off');
+                        button.querySelector('i').classList[mutedIndicatorMethod]('mdi-volume-high');
+                        container.parentElement.querySelector('.hil-user-action-icons .mdi-volume-off')?.classList[unmutedIndicatorMethod]('hil-hide');
+                        button.tooltip?.realign(muted ? 'Unmute' : 'Mute');
+                    },
+                    isMuted ? 'volume-high' : 'volume-off',
+                    isMuted ? 'Unmute' : 'Mute',
+                    'hil-userlist-mute')
+                );
+
+                if (socketStates.options['mute-character']) container.appendChild(userActionButton(function(button) {
+                        const id = getId();
+                        if (id === undefined) return;
+
+                        let muted = id in socketStates['mutedCharUsers'];
+                        if (muted) delete socketStates['mutedCharUsers'][id];
+                        if (!muted) socketStates['mutedCharUsers'][id] = true;
+
+                        for (const mutedId in socketStates['mutedCharUsers']) {
+                            if (muteInputInstance.items.find(item => item.id === Number(mutedId))) continue;
+                            delete socketStates['mutedCharUsers'][mutedId];
+                        }
+
+                        muted = id in socketStates['mutedCharUsers'];
+                        const mutedIndicatorMethod = muted ? 'add' : 'remove';
+                        const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
+                        button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-eye-off');
+                        button.querySelector('i').classList[mutedIndicatorMethod]('mdi-eye');
+                        container.parentElement.querySelector('.hil-user-action-icons .mdi-eye-off')?.classList[unmutedIndicatorMethod]('hil-hide');
+                        button.tooltip?.realign(muted ? 'Show character' : 'Hide character');
+                    },
+                    isCharacterMuted ? 'eye' : 'eye-off',
+                    isCharacterMuted ? 'Show character' : 'Hide character',
+                    'hil-userlist-mute-char')
+                );
+                
+                container.removeWithTooltips = function() {
+                    container.querySelectorAll('.hil-icon-button').forEach(button => button.tooltip?.remove());
+                    container.remove();
+                }
+                return container;
+            }
+
+            function userActionIconSet() {
+                const container = document.createElement('div');
+                container.className = 'hil-user-action-icons';
+                // container.appendChild(createIcon('crown'));
+                // container.appendChild(createIcon('skull'));
+                container.appendChild(createIcon('volume-off', undefined, undefined, 'hil-hide'));
+                if (socketStates.options['mute-character']) container.appendChild(createIcon('eye-off', undefined, undefined, 'hil-hide'));
+                return container;
+            }
+
+            function processUserListItem(userItem) {
+                const usernameElement = userItem.querySelector('.v-list-item__title');
+                if (usernameElement.innerText === userInstance.currentUser.username) return;
+                userItem.appendChild(userActionButtonSet(usernameElement, true));
+                const icons = userActionIconSet();
+                userItem.appendChild(icons);
+                if (muteInputInstance.selectedItems.find(user => user.username === usernameElement.innerText)) {
+                    icons.querySelector('.mdi-volume-off').classList.remove('hil-hide');
+                }
+                if (socketStates.options['mute-character'] && getIDFromUsername(usernameElement.innerText) in socketStates['mutedCharUsers']) {
+                    icons.querySelector('.mdi-eye-off').classList.remove('hil-hide');
+                }
+            }
+
+            function reloadUserList() {
+                for (let userItem of userList.children) {
+                    userItem.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
+                    userItem.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
+                    processUserListItem(userItem);
+                }
+            }
+
+            let userList;
+            const userListButton = document.querySelector('.v-icon--left.mdi-account').parentElement.parentElement;
+            userListButton.addEventListener('click', function() {
+                for (let title of document.querySelectorAll('.v-toolbar__title')) {
+                    if (title.innerText !== 'Users') continue;
+
+                    userList = title.parentElement.parentElement.parentElement.querySelector('.v-list');
+                    for (let userItem of userList.children) {
+                        processUserListItem(userItem);
+                    }
+
+                    new MutationObserver(function(mutations) {
+                        for (let mutation of mutations) {
+                            for (let node of mutation.addedNodes) {
+                                processUserListItem(node);
+                            }
+                            for (let node of mutation.removedNodes) {
+                                node.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
+                                reloadUserList();
+                            }
+                        }
+                    }).observe(
+                        userList, { childList: true }
+                    );
+
+                    break;
+                }
+            });
+
+            userInstance.$watch('currentUser', function(user) {
+                if (!document.contains(userList)) return;
+                
+                if (user.isOwner) userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.removeProperty('display'));
+                else userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.setProperty('display', 'none'));
+                if (user.isOwner || user.isMod) userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.removeProperty('display'));
+                else userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.setProperty('display', 'none'));
+            }, { deep: true });
+        }
     });
 
 
@@ -175,7 +364,7 @@ function main() {
         if (action === 'receive_message') {
 
             if (socketStates.options['tts'] && socketStates['tts-enabled']) data.frame.frameActions.push({ "actionId": 5 });
-            if (socketStates.options['mute-character'] && socketStates['mutedCharUsers'].includes(data.userId)) {
+            if (socketStates.options['mute-character'] && data.userId in socketStates['mutedCharUsers']) {
                 let muteCharacter;
                 if (frameInstance.customCharacters[data.frame.characterId]) {
                     muteCharacter = muteCharacters[frameInstance.customCharacters[data.frame.characterId].side];
@@ -217,35 +406,6 @@ function main() {
             }
             socketStates['prev-message'] = data;
 
-        }
-        if (socketStates.options['list-moderation']) {
-            if (action === 'get_owner_options') {
-                window.postMessage(['is_owner']);
-            } else if (action === 'owner_data') {
-                window.postMessage(['is_owner']);
-                socketStates['mods'] = data.mods;
-                socketStates['bans'] = data.bans.map(user => user.id);
-            } else if (action === 'set_mods') {
-                socketStates['mods'] = data;
-                if (socketStates.options['list-moderation']) {
-                    if (data.includes(userInstance.currentUser.id)) window.postMessage(['is_mod']);
-                    else window.postMessage(['is_mid']);
-                }
-            } else if (action === 'set_bans') {
-                socketStates['bans'] = data.map(user => user.id);
-            } else if (action === 'room_data') {
-                socketStates['mods'] = data.users.filter(user => user.isMod).map(user => user.id);
-            }
-        }
-        if (socketStates.options['mute-character']) {
-            if (action === 'change_username' && socketStates['mutedCharUsers'].includes(data.userId)) {
-                const presentUsers = muteInputInstance.items.filter(item => socketStates['mutedCharUsers'].includes(item.id));
-                presentUsers.find(user => user.id === data.userId).username = data.username;
-                window.postMessage([
-                    'set_muted_char_usernames',
-                    presentUsers.map(user => user.username),
-                ]);
-            }
         }
 
         origOnevent(e);
