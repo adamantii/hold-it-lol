@@ -5,18 +5,16 @@ function main() {
     const socketStates = {
         options: undefined
     }
-    window.socketStates = socketStates;
-    socketStates.optionsLoaded = new Promise(function(resolve, reject) {
+    socketStates.optionsLoaded = new Promise(function (resolve, reject) {
         socketStates.optionsLoadedResolve = resolve;
     });
-    const DEBUGLOGS = true;
     const muteCharacters = {
-        defense: {characterId: null, poseId: 1},
-        prosecution: {characterId: null, poseId: 5},
-        witness: {characterId: null, poseId: 142},
-        counsel: {characterId: null, poseId: 45},
-        judge: {characterId: null, poseId: 30},
-        fallback: {characterId: null, poseId: 98},
+        defense: { characterId: null, poseId: 1 },
+        prosecution: { characterId: null, poseId: 5 },
+        witness: { characterId: null, poseId: 142 },
+        counsel: { characterId: null, poseId: 45 },
+        judge: { characterId: null, poseId: 30 },
+        fallback: { characterId: null, poseId: 98 },
     }
 
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
@@ -42,7 +40,7 @@ function main() {
             return 'theme--light';
         }
     }
-    
+
 
     function httpGetAsync(url) {
         return new Promise((resolve, reject) => {
@@ -87,7 +85,7 @@ function main() {
         const tooltip = document.createElement('div');
         tooltip.className = 'v-tooltip__content hil-small-tooltip hil-hide';
         tooltip.textContent = text;
-        tooltip.realign = function(newText = null) {
+        tooltip.realign = function (newText = null) {
             if (anchorElement === undefined) throw Error('Tooltip has no anchor anchorElement');
             if (newText !== null) tooltip.textContent = newText;
             const rect = anchorElement.getClientRects()[0];
@@ -104,7 +102,7 @@ function main() {
 
 
     window.postMessage(['wrapper_loaded']);
-    window.addEventListener('message', function(event) {
+    window.addEventListener('message', function (event) {
         const [action, data] = event.data;
         if (action === 'set_options') {
             socketStates.options = data;
@@ -122,9 +120,9 @@ function main() {
         }
     });
 
-    socketStates.optionsLoaded.then(function() {
+    socketStates.optionsLoaded.then(function () {
         if (socketStates.options['testimony-mode']) socketStates['testimonyPoses'] = {};
-        if (socketStates.options['mute-character']) socketStates['mutedCharUsers'] = {};
+        if (socketStates.options['list-moderation'] && socketStates.options['mute-character']) socketStates['mutedCharUsers'] = {};
         if (socketStates.options['remute']) socketStates['mutedLeftCache'] = {};
 
         if (socketStates.options['save-last-character']) {
@@ -132,7 +130,7 @@ function main() {
             let loaded = false;
             if (storedId >= 1000) {
                 document.querySelector('.icon-character .v-image__image--cover').style.backgroundImage = 'url("/Images/Loading.gif")';
-                const unwatch = characterListInstance.$watch('customCharactersDropdown.length', function(length) {
+                const unwatch = characterListInstance.$watch('customCharactersDropdown.length', function (length) {
                     if (length > 0) {
                         characterListInstance.setCustomCharacter(storedId);
                         loaded = true;
@@ -143,8 +141,8 @@ function main() {
                 characterListInstance.setCharacter(storedId);
                 loaded = true;
             }
-            
-            characterInstance.$watch('currentCharacter.id', function(id) {
+
+            characterInstance.$watch('currentCharacter.id', function (id) {
                 if (!loaded) return;
                 localStorage['hil-last-character'] = id;
             });
@@ -153,7 +151,7 @@ function main() {
         if (socketStates.options['tts']) {
             const dialogueBox = document.querySelector('.v-main div.chat-box');
             let lastProcessedFrame;
-            new MutationObserver(function(mutations) {
+            new MutationObserver(function (mutations) {
                 for (let mutation of mutations) {
                     if (dialogueBox.style.display !== '') continue;
                     if (frameInstance.frame === lastProcessedFrame) continue;
@@ -181,12 +179,12 @@ function main() {
                 const button = document.createElement('button');
                 button.className = classText + ' v-btn v-btn--has-bg hil-icon-button hil-themed ' + getTheme();
                 if (cssText) button.style.cssText = cssText;
-                
+
                 button.appendChild(createIcon(iconName));
-                
+
                 if (onclick) button.addEventListener('click', () => onclick(button));
                 if (tooltipText) {
-                    button.addEventListener('mouseenter', function() {
+                    button.addEventListener('mouseenter', function () {
                         if (button.tooltip === undefined) button.tooltip = createTooltip(tooltipText, button);
                         button.tooltip.realign();
                         button.tooltip.classList.remove('hil-hide');
@@ -202,7 +200,7 @@ function main() {
                 container.className = 'hil-user-action-buttons';
 
                 const initialId = getIDFromUsername(usernameElement.innerText);
-                const getId = function() {
+                const getId = function () {
                     if (constantId) return initialId;
                     return getIDFromUsername(usernameElement.innerText);
                 }
@@ -210,10 +208,10 @@ function main() {
                 const isMuted = muteInputInstance.selectedItems.find(item => item.username === usernameElement.innerText);
                 const isCharacterMuted = initialId in socketStates['mutedCharUsers'];
 
-                container.appendChild(userActionButton(function() {
+                container.appendChild(userActionButton(function () {
                     const id = getId();
                     if (id === undefined) return;
-                    
+
                     const mods = roomInstance.users.filter(user => user.isMod).map(user => user.id);
                     if (!mods.includes(id)) mods.push(id);
                     else mods.splice(mods.indexOf(id), 1);
@@ -221,7 +219,7 @@ function main() {
                     socket.emit('set_mods', mods);
                 }, 'crown', 'Make moderator', 'hil-userlist-mod', userInstance.currentUser.isOwner ? '' : 'display: none;'));
 
-                container.appendChild(userActionButton(function() {
+                container.appendChild(userActionButton(function () {
                     for (let label of document.querySelectorAll('.v-select--chips.v-text-field label')) {
                         if (label.textContent !== 'Banned Users') continue;
                         const banInputInstance = label.parentElement.parentElement.parentElement.parentElement.__vue__;
@@ -232,51 +230,51 @@ function main() {
                     }
                 }, 'skull', 'Ban', 'hil-userlist-ban', userInstance.currentUser.isOwner || userInstance.currentUser.isMod ? '' : 'display: none;'));
 
-                container.appendChild(userActionButton(function(button) {
-                        const id = getId();
-                        if (id === undefined) return;
-                        muteInputInstance.selectItem(id);
+                container.appendChild(userActionButton(function (button) {
+                    const id = getId();
+                    if (id === undefined) return;
+                    muteInputInstance.selectItem(id);
 
-                        const muted = !muteInputInstance.selectedItems.find(item => item.id === id); // Counter-intuitive but trust it
-                        const mutedIndicatorMethod = muted ? 'add' : 'remove';
-                        const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
-                        button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-volume-off');
-                        button.querySelector('i').classList[mutedIndicatorMethod]('mdi-volume-high');
-                        container.parentElement.querySelector('.hil-user-action-icons .mdi-volume-off')?.classList[unmutedIndicatorMethod]('hil-hide');
-                        button.tooltip?.realign(muted ? 'Unmute' : 'Mute');
-                    },
+                    const muted = !muteInputInstance.selectedItems.find(item => item.id === id); // Counter-intuitive but trust it
+                    const mutedIndicatorMethod = muted ? 'add' : 'remove';
+                    const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
+                    button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-volume-off');
+                    button.querySelector('i').classList[mutedIndicatorMethod]('mdi-volume-high');
+                    container.parentElement.querySelector('.hil-user-action-icons .mdi-volume-off')?.classList[unmutedIndicatorMethod]('hil-hide');
+                    button.tooltip?.realign(muted ? 'Unmute' : 'Mute');
+                },
                     isMuted ? 'volume-high' : 'volume-off',
                     isMuted ? 'Unmute' : 'Mute',
                     'hil-userlist-mute')
                 );
 
-                if (socketStates.options['mute-character']) container.appendChild(userActionButton(function(button) {
-                        const id = getId();
-                        if (id === undefined) return;
+                if (socketStates.options['mute-character']) container.appendChild(userActionButton(function (button) {
+                    const id = getId();
+                    if (id === undefined) return;
 
-                        let muted = id in socketStates['mutedCharUsers'];
-                        if (muted) delete socketStates['mutedCharUsers'][id];
-                        if (!muted) socketStates['mutedCharUsers'][id] = true;
+                    let muted = id in socketStates['mutedCharUsers'];
+                    if (muted) delete socketStates['mutedCharUsers'][id];
+                    if (!muted) socketStates['mutedCharUsers'][id] = true;
 
-                        for (const mutedId in socketStates['mutedCharUsers']) {
-                            if (muteInputInstance.items.find(item => item.id === Number(mutedId))) continue;
-                            delete socketStates['mutedCharUsers'][mutedId];
-                        }
+                    for (const mutedId in socketStates['mutedCharUsers']) {
+                        if (muteInputInstance.items.find(item => item.id === Number(mutedId))) continue;
+                        delete socketStates['mutedCharUsers'][mutedId];
+                    }
 
-                        muted = id in socketStates['mutedCharUsers'];
-                        const mutedIndicatorMethod = muted ? 'add' : 'remove';
-                        const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
-                        button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-eye-off');
-                        button.querySelector('i').classList[mutedIndicatorMethod]('mdi-eye');
-                        container.parentElement.querySelector('.hil-user-action-icons .mdi-eye-off')?.classList[unmutedIndicatorMethod]('hil-hide');
-                        button.tooltip?.realign(muted ? 'Show character' : 'Hide character');
-                    },
+                    muted = id in socketStates['mutedCharUsers'];
+                    const mutedIndicatorMethod = muted ? 'add' : 'remove';
+                    const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
+                    button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-eye-off');
+                    button.querySelector('i').classList[mutedIndicatorMethod]('mdi-eye');
+                    container.parentElement.querySelector('.hil-user-action-icons .mdi-eye-off')?.classList[unmutedIndicatorMethod]('hil-hide');
+                    button.tooltip?.realign(muted ? 'Show character' : 'Hide character');
+                },
                     isCharacterMuted ? 'eye' : 'eye-off',
                     isCharacterMuted ? 'Show character' : 'Hide character',
                     'hil-userlist-mute-char')
                 );
-                
-                container.removeWithTooltips = function() {
+
+                container.removeWithTooltips = function () {
                     container.querySelectorAll('.hil-icon-button').forEach(button => button.tooltip?.remove());
                     container.remove();
                 }
@@ -317,7 +315,7 @@ function main() {
 
             let userList;
             const userListButton = document.querySelector('.v-icon--left.mdi-account').parentElement.parentElement;
-            userListButton.addEventListener('click', function() {
+            userListButton.addEventListener('click', function () {
                 for (let title of document.querySelectorAll('.v-toolbar__title')) {
                     if (title.innerText !== 'Users') continue;
 
@@ -326,7 +324,7 @@ function main() {
                         processUserListItem(userItem);
                     }
 
-                    new MutationObserver(function(mutations) {
+                    new MutationObserver(function (mutations) {
                         for (let mutation of mutations) {
                             for (let node of mutation.addedNodes) {
                                 processUserListItem(node);
@@ -344,9 +342,9 @@ function main() {
                 }
             });
 
-            userInstance.$watch('currentUser', function(user) {
+            userInstance.$watch('currentUser', function (user) {
                 if (!document.contains(userList)) return;
-                
+
                 if (user.isOwner) userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.removeProperty('display'));
                 else userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.setProperty('display', 'none'));
                 if (user.isOwner || user.isMod) userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.removeProperty('display'));
@@ -357,20 +355,18 @@ function main() {
 
 
     const origOnevent = socket.onevent;
-    socket.onevent = function(e) {
-        if (DEBUGLOGS) console.log('event', e);
-        const [ action, data ] = e.data;
+    socket.onevent = function (e) {
+        const [action, data] = e.data;
 
         if (action === 'receive_message') {
 
             if (socketStates.options['tts'] && socketStates['tts-enabled']) data.frame.frameActions.push({ "actionId": 5 });
-            if (socketStates.options['mute-character'] && data.userId in socketStates['mutedCharUsers']) {
+            if (socketStates.options['list-moderation'] && socketStates.options['mute-character'] && data.userId in socketStates['mutedCharUsers']) {
                 let muteCharacter;
                 if (frameInstance.customCharacters[data.frame.characterId]) {
                     muteCharacter = muteCharacters[frameInstance.customCharacters[data.frame.characterId].side];
                 } else if (data.frame.characterId === null) {
                     muteCharacter = muteCharacters[getPresetCharacterFromPose(data.frame.poseId).side];
-                    // TODO: add extra condition for known paired character's side
                 } else {
                     muteCharacter = muteCharacters.witness
                 }
@@ -388,7 +384,7 @@ function main() {
                         musicSpan.innerHTML = 'Now Playing: 😵‍💫';
                     } else if (parseInt(tag) !== NaN) {
                         const url = 'https://api.objection.lol/assets/music/get?id=' + tag;
-                        httpGetAsync(url).then(function(response) {
+                        httpGetAsync(url).then(function (response) {
                             const music = JSON.parse(response);
                             // const audioElement = document.createElement('audio');
                             // audioElement.src = music.url;
@@ -420,7 +416,7 @@ function main() {
                     return true;
                 }
                 if (checkLastMessage() === false) {
-                    const unwatch = chatInstance.$watch('messages', function() {
+                    const unwatch = chatInstance.$watch('messages', function () {
                         if (checkLastMessage()) unwatch();
                     });
                 }
@@ -431,8 +427,7 @@ function main() {
     }
 
     const origEmit = socket.emit;
-    socket.emit = function(action, data) {
-        if (DEBUGLOGS) console.log('emit', action, data);
+    socket.emit = function (action, data) {
         let delay = 0;
 
         if (action === 'message') {
@@ -442,7 +437,7 @@ function main() {
                 if (data.poseId === socketStates['prev-pre-pose']) data.poseAnimation = false;
             }
             if (socketStates.options['smart-tn'] && data.poseAnimation && socketStates['prev-char-id'] === characterInstance.currentCharacter.id && data.poseId !== socketStates['prev-pose']) {
-                (function() {
+                (function () {
                     let useTN = socketStates.options['tn-toggle-value'];
                     useTN = useTN === undefined ? true : useTN;
                     useTN = data.text.includes('[##tn]') ? !useTN : useTN;
@@ -463,13 +458,13 @@ function main() {
                         if (currentPoseName.includes(substr)) poseIsTN = true;
                     }
                     if (poseIsTN) return;
-                    
+
                     let tnPoses = [];
                     for (let substr of patterns) {
                         tnPoses = tnPoses.concat(charPoses.filter(pose => pose.name.includes(substr)));
                     }
                     if (tnPoses.length === 0) return;
-                    const [ tnPoseName, distance ] = closestMatch(prevPoseName, tnPoses.map(pose => pose.name));
+                    const [tnPoseName, distance] = closestMatch(prevPoseName, tnPoses.map(pose => pose.name));
                     if (!tnPoseName) return;
                     const ratio = (prevPoseName.length + tnPoseName.length - distance) / (prevPoseName.length + tnPoseName.length);
                     if (ratio < 0.63) return;
@@ -481,7 +476,7 @@ function main() {
                     delay = 1000;
                 })();
             }
-            if (socketStates.options['testimony-mode']) (function() {
+            if (socketStates.options['testimony-mode']) (function () {
                 const match = /\[##tmid([0-9]+?)\]/g.exec(data.text);
                 if (match === null) return;
                 const statementId = parseInt(match[1]);
