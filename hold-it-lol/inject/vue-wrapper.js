@@ -436,7 +436,7 @@ function main() {
                 if (data.poseAnimation) window.postMessage(['pre_animate_locked']);
                 if (data.poseId === socketStates['prev-pre-pose']) data.poseAnimation = false;
             }
-            if (socketStates.options['smart-tn'] && data.poseAnimation && socketStates['prev-char-id'] === characterInstance.currentCharacter.id && data.poseId !== socketStates['prev-pose']) {
+            if (socketStates.options['smart-tn'] && data.poseAnimation && socketStates['prev-char'] === characterInstance.currentCharacter.id && data.poseId !== socketStates['prev-pose']) {
                 (function () {
                     let useTN = socketStates.options['tn-toggle-value'];
                     useTN = useTN === undefined ? true : useTN;
