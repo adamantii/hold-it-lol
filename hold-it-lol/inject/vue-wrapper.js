@@ -19,6 +19,7 @@ function main() {
 
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
     const roomInstance = document.querySelector('div.mx-auto.v-card--flat.v-sheet').parentElement.__vue__;
+    const toolbarInstance = document.querySelector('.mx-auto.v-card header').__vue__.$parent;
     const characterInstance = document.querySelector('.v-main__wrap > div > div.row > div:nth-child(1) > div').__vue__;
     const characterListInstance = document.querySelector('div.v-main__wrap > div > div.text-center').__vue__;
     const userInstance = document.querySelector('.v-main__wrap > div').__vue__;
@@ -95,7 +96,9 @@ function main() {
         let muteCharacter;
         if (frameInstance.customCharacters[charId]) {
             muteCharacter = muteCharacters[frameInstance.customCharacters[charId].side];
-        } else if (charId === null || charId < 1000) {
+        } else if (charId < 1000) {
+            muteCharacter = muteCharacters[characterListInstance.allCharacters[charId].side];
+        } else if (charId === null) {
             muteCharacter = muteCharacters[getPresetCharacterFromPose(poseId).side];
         } else {
             muteCharacter = muteCharacters.fallback;
@@ -384,24 +387,27 @@ function main() {
 
             if (socketStates.options['tts'] && socketStates['tts-enabled']) data.frame.frameActions.push({ "actionId": 5 });
             if (socketStates.options['list-moderation'] && socketStates.options['mute-character']) {
-                if (data.userId in socketStates['mutedCharUsers']) {
-                    const muteCharacter = getMuteCharacter(data.frame.characterId, data.frame.poseId);
-                    data.frame.characterId = muteCharacter.characterId;
-                    data.frame.poseId = muteCharacter.poseId;
-                }
                 const unwatch = frameInstance.$watch('frame', function(frame) {
                     if (!compareShallow(frame, data.frame, ['text', 'poseId', 'bubbleType', 'username', 'mergeNext', 'doNotTalk', 'goNext', 'poseAnimation', 'flipped', 'backgroundId', 'characterId', 'popupId'])) return;
                     unwatch();
+                    
+                    if (data.userId in socketStates['mutedCharUsers']) {
+                        const muteCharacter = getMuteCharacter(frameInstance.character.id, frame.poseId);
+                        if (frameInstance.pairConfig?.characterId === frameInstance.character.id) frameInstance.pairConfig.characterId = muteCharacter.characterId;
+                        else if (frameInstance.pairConfig?.characterId2 === frameInstance.character.id) frameInstance.pairConfig.characterId2 = muteCharacter.characterId;
+                        frame.characterId = muteCharacter.characterId;
+                        frame.poseId = muteCharacter.poseId;
+                    }
                     
                     if (Object.values(muteCharacters).map(character => character.poseId).includes(frame.pairPoseId)) return;
                     const pairedUser = roomInstance.pairs.find(pair => pair.userId1 === data.userId)?.userId2 || roomInstance.pairs.find(pair => pair.userId2 === data.userId)?.userId1;
                     if (!(pairedUser in socketStates['mutedCharUsers'])) return;
                     
-                    const pairIs1 = frame.characterId === frameInstance.pairConfig.characterId;
-                    const muteCharacter = getMuteCharacter(pairIs1 ? frameInstance.pairConfig.characterId : frameInstance.pairConfig.characterId2, frame.pairPoseId);
+                    const pairIs2 = frameInstance.character.id === frameInstance.pairConfig.characterId;
+                    const muteCharacter = getMuteCharacter(pairIs2 ? frameInstance.pairConfig.characterId2 : frameInstance.pairConfig.characterId, frame.pairPoseId);
                     frameInstance.frame.pairPoseId = muteCharacter.poseId;
-                    if (pairIs1) frameInstance.pairConfig.characterId = muteCharacter.characterId;
-                    else frameInstance.pairConfig.characterId2 = muteCharacter.characterId;
+                    if (pairIs2) frameInstance.pairConfig.characterId2 = muteCharacter.characterId;
+                    else frameInstance.pairConfig.characterId = muteCharacter.characterId;
                 });
             }
             if (socketStates.options['now-playing']) {
