@@ -5,11 +5,10 @@ Note: the extension is still unfinished and in beta - several assets and feature
 
 ## Options
 
-Upon installation, the extension has a page of toggleable options with descriptions to personalize your courtroom experience. It can be accessed from the extension icon pop-up. (Option preview images not yet implemented)
+Upon installation, the extension has a page of toggleable options with descriptions to personalize your courtroom experience. It can be accessed from the extension icon pop-up. (Option preview images are currently... unfinished)
 
 ## Known Issues
 
-A few known, high priority bugs:
+Known bug warnings (as of v0.5 beta):
 
-- Due to the way the extension loads, sometimes it will not process when a courtroom is opened - in such cases, the courtroom page must be reloaded. 
-- The roleplay testimony mode doesn't record poses correctly when pose icons aren't used. Also, typing in a table in the roleplay evidence feature conflicts with objection.lol's keyboard shortcuts.
+- Due to the way the extension loads, many UI elements break if you begin spectating a court and then join from the same tab.
