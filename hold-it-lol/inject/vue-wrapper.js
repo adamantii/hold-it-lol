@@ -9,12 +9,12 @@ function main() {
         socketStates.optionsLoadedResolve = resolve;
     });
     const muteCharacters = {
-        defense: { characterId: null, poseId: 1 },
-        prosecution: { characterId: null, poseId: 5 },
-        witness: { characterId: null, poseId: 142 },
-        counsel: { characterId: null, poseId: 45 },
-        judge: { characterId: null, poseId: 30 },
-        fallback: { characterId: null, poseId: 98 },
+        defense: { characterId: 669437, poseId: 8525792 },
+        prosecution: { characterId: 669438, poseId: 8525810 },
+        witness: { characterId: 669439, poseId: 8525809 },
+        counsel: { characterId: 669440, poseId: 8525795 },
+        judge: { characterId: 669441, poseId: 8525794 },
+        fallback: { characterId: 669439, poseId: 8525809 },
     }
 
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
@@ -41,6 +41,15 @@ function main() {
         }
     }
 
+
+    function compareShallow(a, b, keys) {
+        for(const key of keys) {
+            if(a[key] !== b[key]) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     function httpGetAsync(url) {
         return new Promise((resolve, reject) => {
@@ -75,10 +84,23 @@ function main() {
         if (presetChar) return presetChar;
         else return null;
     }
+
     function getFrameCharacterId(frame) {
         if (frame.characterId >= 1000) return frame.characterId;
 
         return getPresetCharacterFromPose(frame.poseId).id;
+    }
+
+    function getMuteCharacter(charId, poseId) {
+        let muteCharacter;
+        if (frameInstance.customCharacters[charId]) {
+            muteCharacter = muteCharacters[frameInstance.customCharacters[charId].side];
+        } else if (charId === null || charId < 1000) {
+            muteCharacter = muteCharacters[getPresetCharacterFromPose(poseId).side];
+        } else {
+            muteCharacter = muteCharacters.fallback;
+        }
+        return muteCharacter
     }
 
     function createTooltip(text, anchorElement) {
@@ -361,17 +383,26 @@ function main() {
         if (action === 'receive_message') {
 
             if (socketStates.options['tts'] && socketStates['tts-enabled']) data.frame.frameActions.push({ "actionId": 5 });
-            if (socketStates.options['list-moderation'] && socketStates.options['mute-character'] && data.userId in socketStates['mutedCharUsers']) {
-                let muteCharacter;
-                if (frameInstance.customCharacters[data.frame.characterId]) {
-                    muteCharacter = muteCharacters[frameInstance.customCharacters[data.frame.characterId].side];
-                } else if (data.frame.characterId === null) {
-                    muteCharacter = muteCharacters[getPresetCharacterFromPose(data.frame.poseId).side];
-                } else {
-                    muteCharacter = muteCharacters.witness
+            if (socketStates.options['list-moderation'] && socketStates.options['mute-character']) {
+                if (data.userId in socketStates['mutedCharUsers']) {
+                    const muteCharacter = getMuteCharacter(data.frame.characterId, data.frame.poseId);
+                    data.frame.characterId = muteCharacter.characterId;
+                    data.frame.poseId = muteCharacter.poseId;
                 }
-                data.frame.characterId = muteCharacter.characterId;
-                data.frame.poseId = muteCharacter.poseId;
+                const unwatch = frameInstance.$watch('frame', function(frame) {
+                    if (!compareShallow(frame, data.frame, ['text', 'poseId', 'bubbleType', 'username', 'mergeNext', 'doNotTalk', 'goNext', 'poseAnimation', 'flipped', 'backgroundId', 'characterId', 'popupId'])) return;
+                    unwatch();
+                    
+                    if (Object.values(muteCharacters).map(character => character.poseId).includes(frame.pairPoseId)) return;
+                    const pairedUser = roomInstance.pairs.find(pair => pair.userId1 === data.userId)?.userId2 || roomInstance.pairs.find(pair => pair.userId2 === data.userId)?.userId1;
+                    if (!(pairedUser in socketStates['mutedCharUsers'])) return;
+                    
+                    const pairIs1 = frame.characterId === frameInstance.pairConfig.characterId;
+                    const muteCharacter = getMuteCharacter(pairIs1 ? frameInstance.pairConfig.characterId : frameInstance.pairConfig.characterId2, frame.pairPoseId);
+                    frameInstance.frame.pairPoseId = muteCharacter.poseId;
+                    if (pairIs1) frameInstance.pairConfig.characterId = muteCharacter.characterId;
+                    else frameInstance.pairConfig.characterId2 = muteCharacter.characterId;
+                });
             }
             if (socketStates.options['now-playing']) {
                 const musicSpan = document.querySelector('div.hil-tab-row-now-playing > span');
