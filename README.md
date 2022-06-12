@@ -9,7 +9,7 @@ Upon installation, there is a page of options with descriptions to personalize y
 
 ### Discussion
 
-If you have any questions or problems regarding the extension, you can join our [Discord server](https://discord.gg/5dMRR37FWt).
+If you have any questions, problems or suggestions regarding the extension, you can join our [Discord server](https://discord.gg/5dMRR37FWt).
 
 ### Installation instructions
 
