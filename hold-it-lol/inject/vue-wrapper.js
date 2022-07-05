@@ -165,6 +165,8 @@ function main() {
             } else if (storedId > 1) {
                 characterListInstance.setCharacter(storedId);
                 loaded = true;
+            } else {
+                loaded = true;
             }
 
             characterInstance.$watch('currentCharacter.id', function (id) {
