@@ -530,6 +530,8 @@ function main() {
                         }
                     ]);
                 }
+
+                data.testimony = true;
             })();
             if (socketStates.options['smart-pre']) socketStates['prev-pre-pose'] = data.frame.poseId;
             socketStates['prev-pose'] = data.frame.poseId;
