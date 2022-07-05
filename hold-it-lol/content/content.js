@@ -1123,7 +1123,7 @@ function onLoad(options) {
     if (options['bulk-evidence']) {
         let buttonRow;
         for (let i of document.querySelectorAll('.mdi-restart')) {
-            if (i.parentElement.textContent != " Reset ") continue;
+            if (i.parentElement.textContent != " Clear ") continue;
             buttonRow = i.parentElement.parentElement.parentElement;
             break;
         }
@@ -1140,7 +1140,7 @@ function onLoad(options) {
         tabDiv.className = 'hil-evidence-card hil-hide hil-themed ' + theme;
         tabButton.appendChild(tabSpan);
         buttonRow.appendChild(tabButton);
-        buttonRow.appendChild(tabDiv);
+        app.appendChild(tabDiv);
 
         let tabOpen = false;
         document.addEventListener('click', function () {
@@ -1199,7 +1199,7 @@ function onLoad(options) {
 
                 setValue(inputRow.querySelector(':scope > :nth-child(1) input'), name);
                 setValue(inputRow.querySelector(':scope > :nth-child(2) input'), image);
-                setValue(inputRow.querySelector(':scope > :nth-child(3) input'), desc);
+                setValue(inputRow.querySelector(':scope > :nth-child(5) textarea'), desc);
                 adding = true;
                 setTimeout(() => {
                     evidenceButton.click();

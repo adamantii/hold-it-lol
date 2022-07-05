@@ -217,7 +217,7 @@ div.hil-small-tooltip {
 
 .hil-evidence-card {
     z-index: 1;
-    position: fixed;
+    position: absolute;
     width: 400px;
     transition: var(--default-transition);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.8);
