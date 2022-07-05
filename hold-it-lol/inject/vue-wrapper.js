@@ -508,10 +508,10 @@ function main() {
                     const ratio = (prevPoseName.length + tnPoseName.length - distance) / (prevPoseName.length + tnPoseName.length);
                     if (ratio < 0.63) return;
                     const tnPoseId = charPoses.find(pose => pose.name === tnPoseName).id;
-                    const tnFrame = JSON.parse(JSON.stringify(data.frame));
-                    tnFrame.poseId = tnPoseId;
-                    tnFrame.text = '';
-                    origEmit.call(socket, action, tnFrame);
+                    const tnData = JSON.parse(JSON.stringify(data));
+                    tnData.frame.poseId = tnPoseId;
+                    tnData.frame.text = '';
+                    origEmit.call(socket, action, tnData);
                     delay = 1000;
                 })();
             }
