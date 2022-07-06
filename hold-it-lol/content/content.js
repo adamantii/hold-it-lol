@@ -818,6 +818,7 @@ function onLoad(options) {
         document.body.classList.add('hil-loading-menus');
 
         document.querySelector('.v-btn__content .mdi-menu').click();
+        document.querySelector('.v-btn__content .v-icon.mdi-cog').click();
 
         const buttons = document.querySelector('.mdi-palette').parentElement.parentElement.parentElement.querySelectorAll('button');
         for (let button of buttons) {
@@ -832,8 +833,6 @@ function onLoad(options) {
                 });
             }
         }
-
-
 
         setTimeout(function () {
 
@@ -907,8 +906,6 @@ function onLoad(options) {
                 }
             }
         }, 1);
-
-        setTimeout(() => document.body.classList.remove('hil-loading-menus'), 2000);
     }
     premakeMenus();
 
@@ -958,102 +955,122 @@ function onLoad(options) {
         configureDualButton();
     }
 
-
-    if (options['no-talk-toggle'] || options['smart-tn']) {
-        const activeToggleClasses = ['v-input--is-label-active', 'v-input--is-dirty', 'primary--text'];
+    setTimeout(() => {
         for (let label of document.querySelectorAll('label')) {
             if (label.textContent !== 'Pre-animate') continue;
 
-            if (options['smart-pre']) {
-                const preToggle = label.parentElement.parentElement.parentElement;
-                const preToggleThumb = preToggle.querySelector('.v-input--switch__thumb');
-                preToggle.addEventListener('click', function() {
-                    window.postMessage(['pre_animate_toggled']);
-                });
-                window.addEventListener('message', function(event) {
-                    const action = event.data[0];
-                    if (action !== 'pre_animate_locked') return;
-                    preToggleThumb.className += ' mdi mdi-lock hil-toggle-thumb-lock';
-                    preToggleThumb.classList.remove('v-input--switch__thumb');
-                });
-                new MutationObserver(function () {
-                    if (!preToggleThumb.classList.contains('hil-toggle-thumb-lock')) return;
-                    preToggleThumb.classList.remove('hil-toggle-thumb-lock');
-                    preToggleThumb.classList.remove('mdi-lock');
-                    preToggleThumb.classList.remove('mdi');
-                    preToggleThumb.classList.add('v-input--switch__thumb');
-                }).observe(document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement, {
-                    childList: true,
-                    subtree: true,
-                    characterData: true,
-                    attributeFilter: [ 'class' ],
-                });
-            }
+            const preToggle = label.parentElement.parentElement.parentElement;
+            const toggles = preToggle.parentElement;
+            const testimonyToggle = toggles.parentElement.querySelector(':scope > .v-input--switch');
+            toggles.classList.add('hil-message-toggles');
 
-            const flipToggle = label.parentElement.parentElement.parentElement.nextElementSibling;
-            
-            function createToggle(onchange, text, checked = false) {
-                const newToggle = flipToggle.cloneNode(true);
+            if (options['no-talk-toggle'] || options['smart-tn']) {
+                const activeToggleClasses = ['v-input--is-label-active', 'v-input--is-dirty', 'primary--text'];
 
-                for (let elem of [newToggle, ...newToggle.querySelectorAll('*')]) {
-                    if (elem.className.includes('theme--')) elem.classList.add('hil-themed');
+                if (options['smart-pre']) {
+                    const preToggle = label.parentElement.parentElement.parentElement;
+                    const preToggleThumb = preToggle.querySelector('.v-input--switch__thumb');
+                    preToggle.addEventListener('click', function() {
+                        window.postMessage(['pre_animate_toggled']);
+                    });
+                    window.addEventListener('message', function(event) {
+                        const action = event.data[0];
+                        if (action !== 'pre_animate_locked') return;
+                        preToggleThumb.className += ' mdi mdi-lock hil-toggle-thumb-lock';
+                        preToggleThumb.classList.remove('v-input--switch__thumb');
+                    });
+                    new MutationObserver(function () {
+                        if (!preToggleThumb.classList.contains('hil-toggle-thumb-lock')) return;
+                        preToggleThumb.classList.remove('hil-toggle-thumb-lock');
+                        preToggleThumb.classList.remove('mdi-lock');
+                        preToggleThumb.classList.remove('mdi');
+                        preToggleThumb.classList.add('v-input--switch__thumb');
+                    }).observe(document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement, {
+                        childList: true,
+                        subtree: true,
+                        characterData: true,
+                        attributeFilter: [ 'class' ],
+                    });
                 }
+
+                const flipToggle = label.parentElement.parentElement.parentElement.nextElementSibling;
                 
-                const input = newToggle.querySelector('input');
-                input.removeAttribute('id');
-                const label = newToggle.querySelector('label');
-                label.removeAttribute('for')
-                label.textContent = text;
-                
-                newToggle.addEventListener('click', function() {
-                    input.checked = !input.checked;
-                    input.ariaChecked = input.checked;
-                    if (input.checked) {
+                function createToggle(onchange, text, checked = false) {
+                    const newToggle = flipToggle.cloneNode(true);
+
+                    for (let elem of [newToggle, ...newToggle.querySelectorAll('*')]) {
+                        if (elem.className.includes('theme--')) elem.classList.add('hil-themed');
+                    }
+                    
+                    const input = newToggle.querySelector('input');
+                    input.removeAttribute('id');
+                    const label = newToggle.querySelector('label');
+                    label.removeAttribute('for')
+                    label.textContent = text;
+                    
+                    newToggle.addEventListener('click', function() {
+                        input.checked = !input.checked;
+                        input.ariaChecked = input.checked;
+                        if (input.checked) {
+                            activeToggleClasses.forEach(cls => newToggle.classList.add(cls));
+                            newToggle.querySelectorAll('.v-input--selection-controls__input div').forEach(div => div.classList.add('primary--text'));
+                        } else {
+                            activeToggleClasses.forEach(cls => newToggle.classList.remove(cls));
+                            newToggle.querySelectorAll('.v-input--selection-controls__input div').forEach(div => div.classList.remove('primary--text'));
+                        }
+                        onchange(input.checked);
+                    });
+
+                    if (checked) {
                         activeToggleClasses.forEach(cls => newToggle.classList.add(cls));
                         newToggle.querySelectorAll('.v-input--selection-controls__input div').forEach(div => div.classList.add('primary--text'));
-                    } else {
-                        activeToggleClasses.forEach(cls => newToggle.classList.remove(cls));
-                        newToggle.querySelectorAll('.v-input--selection-controls__input div').forEach(div => div.classList.remove('primary--text'));
                     }
-                    onchange(input.checked);
-                });
 
-                if (checked) {
-                    activeToggleClasses.forEach(cls => newToggle.classList.add(cls));
-                    newToggle.querySelectorAll('.v-input--selection-controls__input div').forEach(div => div.classList.add('primary--text'));
+                    return newToggle;
                 }
 
-                return newToggle;
+                const toggleData = [];
+                options['no-talk-toggle'] && toggleData.push({label: 'No Talking', checked: false, onchange: function(checked) {
+                    window.postMessage(['set_socket_state', {
+                            [ 'no-talk' ]: checked
+                        }]);
+                }});
+                options['smart-tn'] && toggleData.push({label: 'TN-animate', checked: options['tn-toggle-value'], onchange: function(checked) {
+                    optionSet('tn-toggle-value', checked);
+                    window.postMessage([
+                        'set_options',
+                        options
+                    ]);
+                }});
+                for (let i = 0; i < toggleData.length; i++) {
+                    const { label, checked, onchange } = toggleData[i];
+                    const toggle = createToggle(function(checked) {
+                        onchange(checked);
+                    }, label, checked);
+
+                    if (i !== toggleData.length - 1) toggle.classList.add('mr-4');
+                    flipToggle.parentElement.appendChild(toggle);
+                }
+                
+                flipToggle.style.cssText = 'margin-right:16px!important';
             }
 
-            const toggleData = [];
-            options['no-talk-toggle'] && toggleData.push({label: 'No Talking', checked: false, onchange: function(checked) {
-                window.postMessage(['set_socket_state', {
-                        [ 'no-talk' ]: checked
-                    }]);
-            }});
-            options['smart-tn'] && toggleData.push({label: 'TN-animate', checked: options['tn-toggle-value'], onchange: function(checked) {
-                optionSet('tn-toggle-value', checked);
-                window.postMessage([
-                    'set_options',
-                    options
-                ]);
-            }});
-            for (let i = 0; i < toggleData.length; i++) {
-                const { label, checked, onchange } = toggleData[i];
-                const toggle = createToggle(function(checked) {
-                    onchange(checked);
-                }, label, checked);
-
-                if (i !== toggleData.length - 1) toggle.classList.add('mr-4');
-                flipToggle.parentElement.appendChild(toggle);
+            toggles.appendChild(testimonyToggle);
+            for (let i = 2; i < toggles.childElementCount; i += 3) {
+                const br = document.createElement('br');
+                toggles.insertBefore(br, toggles.children[i]);
             }
-            
-            flipToggle.style.cssText = 'margin-right:16px!important';
+
+            if (options['old-toggles']) {
+                const optionsIcon = document.querySelector('.v-btn__content .v-icon.mdi-cog');
+                optionsIcon.classList.remove('mdi-cog');
+                optionsIcon.classList.add('mdi-tooltip-image');
+                optionsIcon.parentElement.parentElement.parentElement.parentElement.parentElement.prepend(toggles);
+            }
+
             break;
         }
-    }
-
+    }, 1);
 
 
     if (options['comma-pause']) {
@@ -1434,6 +1451,7 @@ function onLoad(options) {
                     const headline = node.querySelector('.headline');
                     if (!headline || headline.textContent != "Join Courtroom") continue;
                     headline.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('hil-join-dialog');
+                    document.body.classList.remove('hil-loading-menus');
                     joinDialogShown = true;
                 }
             }
