@@ -180,7 +180,7 @@ function onLoad(options) {
     console.log('holdit.lol - running main()');
     
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
-    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
+    if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
 
     const showTutorial = !options['seen-tutorial'] || !(Object.values(options).filter(x => x).length > 1);
 
@@ -818,7 +818,8 @@ function onLoad(options) {
         document.body.classList.add('hil-loading-menus');
 
         document.querySelector('.v-btn__content .mdi-menu').click();
-        document.querySelector('.v-btn__content .v-icon.mdi-cog').click();
+        document.querySelector('.v-btn__content .mdi-cog').click();
+        document.querySelector('.v-btn__content .mdi-bookshelf').click();
 
         const buttons = document.querySelector('.mdi-palette').parentElement.parentElement.parentElement.querySelectorAll('button');
         for (let button of buttons) {
@@ -1069,6 +1070,35 @@ function onLoad(options) {
             }
 
             break;
+        }
+
+        if (options['fullscreen-evidence']) {
+            for (let span of document.querySelectorAll('.v-btn__content')) {
+                if (span.textContent !== ' Present ') continue;
+
+                const presentButton = span.parentElement;
+                presentButton.setAttribute('hil-button', 'present-evd');
+                const fullscreenButton = presentButton.cloneNode(true);
+                fullscreenButton.setAttribute('hil-button', 'fullscreen-evd');
+                presentButton.parentElement.prepend(fullscreenButton);
+                window.postMessage(['fullscreen_button_added']);
+
+                fullscreenButton.removeAttribute('disabled');
+                fullscreenButton.querySelector('i').classList.remove('mdi-hand-pointing-up');
+                fullscreenButton.querySelector('i').classList.add('mdi-fit-to-screen');
+                fullscreenButton.querySelector('span').lastChild.textContent = 'Show full';
+                fullscreenButton.addEventListener('click', function () {
+                    presentButton.click();
+                    setTimeout(function() {
+                        const text = textArea.value;
+                        const match = text.match(/\[#evdi[0-9]+\]$/);
+                        if (!match) return;
+                        textArea.value = text.slice(0, match.index) + match[0].replace('[#evdi', '[#evd');
+                    }, 1);
+                });
+
+                break;
+            }
         }
     }, 1);
 

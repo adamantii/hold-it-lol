@@ -142,6 +142,12 @@ function main() {
             delete socketStates.testimonyPoses[data];
         } else if (action === 'pre_animate_toggled') {
             delete socketStates['prev-pre-pose'];
+        } else if (action === 'fullscreen_button_added') {
+            const presentButton = document.querySelector('[hil-button="present-evd"]');
+            const fullscreenButton = document.querySelector('[hil-button="fullscreen-evd"]');
+            presentButton.__vue__.$watch('classes', function() {
+                fullscreenButton.className = presentButton.className;
+            });
         }
     });
 

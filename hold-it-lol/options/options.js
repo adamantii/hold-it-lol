@@ -9,6 +9,7 @@ const tabs = [
             { key: 'auto-record', title: 'Auto-recording', description: 'Automatically start recording joined courtrooms (saving is manual).', preview: 'previews/placeholder.png' },
             { key: 'save-last-character', title: 'Remember last character', description: 'The last character you used is selected by default in the next courtroom.', preview: 'previews/placeholder.png' },
             { key: 'convert-chat-urls', title: 'Clickable chat links', description: 'URLs in chat messages become clickable. You can <i>also</i> right click to quickly save sounds & music.', preview: 'previews/placeholder.png' },
+            { key: 'fullscreen-evidence', title: 'Full screen evidence', description: 'Show an icon from the court record on the full screen.', preview: 'previews/placeholder.png' },
             { key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close formatting menus after you\'ve used them.', preview: 'previews/placeholder.png' },
             { key: 'menu-hover', title: 'Open menus by hovering', description: 'Open formatting menus by hovering over them instead of clicking.', preview: 'previews/placeholder.png' },
             { key: 'sound-search', title: 'Sounds and music: Focused search', description: 'Simply press enter to choose the top sound in the search list.', preview: 'previews/placeholder.png' },
