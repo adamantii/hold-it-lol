@@ -155,6 +155,7 @@ function main() {
         if (socketStates.options['testimony-mode']) socketStates['testimonyPoses'] = {};
         if (socketStates.options['list-moderation'] && socketStates.options['mute-character']) socketStates['mutedCharUsers'] = {};
         if (socketStates.options['remute']) socketStates['mutedLeftCache'] = {};
+        if (socketStates.options['mute-character']) socketStates['hiddenLeftCache'] = {};
 
         if (socketStates.options['save-last-character']) {
             const storedId = localStorage['hil-last-character'];
@@ -448,22 +449,39 @@ function main() {
             socketStates['prev-message'] = data;
 
         } else if (action === 'user_left') {
-            if (socketStates.options['remute'] && data.discordUsername && muteInputInstance.selectedItems.find(user => user.id === data.id)) {
-                socketStates['mutedLeftCache'][data.discordUsername] = true;
+            if (socketStates.options['remute'] && data.discordUsername) {
+                if (muteInputInstance.selectedItems.find(user => user.id === data.id)) {
+                    socketStates['mutedLeftCache'][data.discordUsername] = true;
+                }
+                if (data.id in socketStates['mutedCharUsers']) {
+                    socketStates['hiddenLeftCache'][data.discordUsername] = true;
+                }
             }
         } else if (action === 'user_joined') {
-            if (socketStates.options['remute'] && data.discordUsername && data.discordUsername in socketStates['mutedLeftCache']) {
-                muteInputInstance.selectItem(data.id);
-                delete socketStates['mutedLeftCache'][data.discordUsername];
-                const checkLastMessage = () => {
-                    if (chatInstance.messages[chatInstance.messages.length - 1].text.slice(0, -' joined.'.length) !== data.username) return false;
-                    chatInstance.messages[chatInstance.messages.length - 1].text += ' (Automatically re-muted)';
-                    return true;
+            if (socketStates.options['remute'] && data.discordUsername) {
+                function addJoinText(text) {
+                    const checkLastMessage = () => {
+                        if (chatInstance.messages[chatInstance.messages.length - 1].text.slice(0, -' joined.'.length) !== data.username) return false;
+                        chatInstance.messages[chatInstance.messages.length - 1].text += ' ' + text;
+                        return true;
+                    }
+                    if (checkLastMessage() === false) {
+                        const unwatch = chatInstance.$watch('messages', function () {
+                            if (checkLastMessage()) unwatch();
+                        });
+                    }
                 }
-                if (checkLastMessage() === false) {
-                    const unwatch = chatInstance.$watch('messages', function () {
-                        if (checkLastMessage()) unwatch();
-                    });
+
+                if (data.discordUsername in socketStates['mutedLeftCache']) {
+                    muteInputInstance.selectItem(data.id);
+                    delete socketStates['mutedLeftCache'][data.discordUsername];
+                    addJoinText('(Automatically re-muted)');
+                } else if (data.discordUsername in socketStates['hiddenLeftCache']) {
+                    addJoinText('(Automatically re-hidden)');
+                }
+                if (data.discordUsername in socketStates['hiddenLeftCache']) {
+                    socketStates['mutedCharUsers'][data.id] = true;
+                    delete socketStates['hiddenLeftCache'][data.discordUsername];
                 }
             }
         }
