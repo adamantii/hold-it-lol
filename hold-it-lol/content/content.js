@@ -1478,6 +1478,7 @@ function onLoad(options) {
                 }
                 if (joinDialogShown) continue;
                 for (let node of mutation.addedNodes) {
+                    if (!node.querySelector) continue;
                     const headline = node.querySelector('.headline');
                     if (!headline || headline.textContent != "Join Courtroom") continue;
                     headline.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('hil-join-dialog');
