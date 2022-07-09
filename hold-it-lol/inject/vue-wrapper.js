@@ -44,8 +44,8 @@ function main() {
 
 
     function compareShallow(a, b, keys) {
-        for(const key of keys) {
-            if(a[key] !== b[key]) {
+        for (const key of keys) {
+            if (a[key] !== b[key]) {
                 return false;
             }
         }
@@ -145,7 +145,7 @@ function main() {
         } else if (action === 'fullscreen_button_added') {
             const presentButton = document.querySelector('[hil-button="present-evd"]');
             const fullscreenButton = document.querySelector('[hil-button="fullscreen-evd"]');
-            presentButton.__vue__.$watch('classes', function() {
+            presentButton.__vue__.$watch('classes', function () {
                 fullscreenButton.className = presentButton.className;
             });
         }
@@ -385,6 +385,112 @@ function main() {
                 else userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.setProperty('display', 'none'));
             }, { deep: true });
         }
+
+        if (socketStates.options['volume-sliders']) {
+            function processVolumeSliders() {
+                for (let elem of document.querySelectorAll('.v-input__slider .mdi-volume-source:not([hil-slider-processed="1"])')) {
+                    elem.setAttribute('hil-slider-processed', '1');
+                    const masterSliderContainer = elem.parentElement.parentElement.parentElement;
+
+                    function customVolumeSlider(iconClass) {
+                        const sliderContainer = masterSliderContainer.cloneNode(true);
+                        sliderContainer.querySelector('.mdi-volume-source').classList.add(iconClass);
+                        sliderContainer.querySelector('.mdi-volume-source').classList.remove('mdi-volume-source');
+                        sliderContainer.querySelector('.v-slider__track-background').style.width = '100%';
+                        masterSliderContainer.parentElement.appendChild(sliderContainer);
+                        return sliderContainer;
+                    }
+                    const bgsSliderContainer = customVolumeSlider('mdi-volume-high');
+                    const bgmSliderContainer = customVolumeSlider('mdi-music');
+                    for (let child of masterSliderContainer.parentElement.children) {
+                        child.style.marginBottom = '20px';
+                    }
+                    masterSliderContainer.parentElement.lastElementChild.style.removeProperty('margin-bottom');
+
+                    const masterIcon = masterSliderContainer.querySelector('.mdi-volume-source');
+                    masterIcon.classList.remove('mdi');
+                    masterIcon.classList.remove('mdi-volume-source');
+                    masterIcon.textContent = 'All';
+                    masterIcon.style.fontSize = '120%';
+
+                    let bgmVolume = 'hil-bgm-volume' in localStorage ? parseInt(localStorage['hil-bgm-volume']) : 100;
+                    let bgsVolume = 'hil-bgs-volume' in localStorage ? parseInt(localStorage['hil-bgs-volume']) : 100;
+
+                    function setSlider(value, sliderContainer, callback = null) {
+                        if (value > 100) value = 100;
+                        else if (value < 0) value = 0;
+                        sliderContainer.querySelector('.v-slider__track-fill').style.width = value + '%';
+                        sliderContainer.querySelector('.v-slider__thumb-container').style.left = value + '%';
+                        sliderContainer.querySelector('.v-slider__thumb-label > div > span').textContent = value;
+                        if (callback) callback(value);
+                    }
+                    function sliderEvent(event, sliderContainer, callback) {
+                        const sliderRect = sliderContainer.querySelector('.v-slider').getClientRects()[0];
+                        let value = Math.round((event.clientX - sliderRect.x) / sliderRect.width * 100);
+                        setSlider(value, sliderContainer, callback);
+                    }
+                    function mouseDownListener(event, sliderContainer, callback) {
+                        sliderContainer.querySelector('.v-slider__thumb-container').classList.add('v-slider__thumb-container--active');
+                        const adjust = e => sliderEvent(e, sliderContainer, callback);
+                        adjust(event);
+                        document.addEventListener('mousemove', adjust);
+                        document.addEventListener('mouseup', function () {
+                            sliderContainer.querySelector('.v-slider__thumb-container').classList.remove('v-slider__thumb-container--active');
+                            document.removeEventListener('mousemove', adjust);
+                        }, { once: true });
+                    }
+
+                    function howlIsMusic(howl) {
+                        return howl._loop || howl._src.slice(0, 13) === '/audio/music/';
+                    }
+
+                    bgmSliderContainer.querySelector('.v-slider').addEventListener('mousedown', function (event) {
+                        mouseDownListener(event, bgmSliderContainer, function (value) {
+                            bgmVolume = value;
+                            localStorage['hil-bgm-volume'] = value;
+                            for (let howl of Howler._howls) {
+                                if (!howlIsMusic(howl)) continue;
+                                howl.volume(howl._hilOrigVolume * bgmVolume / 100);
+                            }
+                        })
+                    });
+                    setSlider(bgmVolume, bgmSliderContainer);
+
+                    bgsSliderContainer.querySelector('.v-slider').addEventListener('mousedown', function (event) {
+                        mouseDownListener(event, bgsSliderContainer, function (value) {
+                            bgsVolume = value;
+                            localStorage['hil-bgs-volume'] = value;
+                            for (let howl of Howler._howls) {
+                                if (howlIsMusic(howl)) continue;
+                                howl.volume(howl._hilOrigVolume * bgsVolume / 100);
+                            }
+                        })
+                    });
+                    setSlider(bgsVolume, bgsSliderContainer);
+
+                    Howler._howls.push = function (...args) {
+                        Array.prototype.push.call(Howler._howls, ...args);
+                        for (let howl of Howler._howls) {
+                            if (howl._hilProcessed) continue;
+                            howl._hilProcessed = true;
+                            const getHilVolume = howlIsMusic(howl) ? () => bgmVolume : () => bgsVolume;
+
+                            howl._hilOrigVolume = howl.volume();
+                            howl.volume(howl._hilOrigVolume * getHilVolume() / 100);
+                            const origFade = howl.fade.bind(howl);
+                            howl.fade = function (from, to, dur) {
+                                origFade(from * getHilVolume() / 100, to * getHilVolume() / 100, dur);
+                            }
+                        }
+                    };
+                }
+            }
+            processVolumeSliders();
+            window.addEventListener('message', function(event) {
+                const action = event.data[0];
+                if (action === 'room_spectated') processVolumeSliders();
+            })
+        }
     });
 
 
@@ -396,10 +502,10 @@ function main() {
 
             if (socketStates.options['tts'] && socketStates['tts-enabled']) data.frame.frameActions.push({ "actionId": 5 });
             if (socketStates.options['list-moderation'] && socketStates.options['mute-character']) {
-                const unwatch = frameInstance.$watch('frame', function(frame) {
+                const unwatch = frameInstance.$watch('frame', function (frame) {
                     if (!compareShallow(frame, data.frame, ['text', 'poseId', 'bubbleType', 'username', 'mergeNext', 'doNotTalk', 'goNext', 'poseAnimation', 'flipped', 'backgroundId', 'characterId', 'popupId'])) return;
                     unwatch();
-                    
+
                     if (data.userId in socketStates['mutedCharUsers']) {
                         const muteCharacter = getMuteCharacter(frameInstance.character.id, frame.poseId);
                         if (frameInstance.pairConfig?.characterId === frameInstance.character.id) frameInstance.pairConfig.characterId = muteCharacter.characterId;
@@ -407,11 +513,11 @@ function main() {
                         frame.characterId = muteCharacter.characterId;
                         frame.poseId = muteCharacter.poseId;
                     }
-                    
+
                     if (Object.values(muteCharacters).map(character => character.poseId).includes(frame.pairPoseId)) return;
                     const pairedUser = roomInstance.pairs.find(pair => pair.userId1 === data.userId)?.userId2 || roomInstance.pairs.find(pair => pair.userId2 === data.userId)?.userId1;
                     if (!(pairedUser in socketStates['mutedCharUsers'])) return;
-                    
+
                     const pairIs2 = frameInstance.character.id === frameInstance.pairConfig.characterId;
                     const muteCharacter = getMuteCharacter(pairIs2 ? frameInstance.pairConfig.characterId2 : frameInstance.pairConfig.characterId, frame.pairPoseId);
                     frameInstance.frame.pairPoseId = muteCharacter.poseId;

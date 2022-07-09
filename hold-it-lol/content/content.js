@@ -821,6 +821,13 @@ function onLoad(options) {
         document.querySelector('.v-btn__content .mdi-cog').click();
         document.querySelector('.v-btn__content .mdi-bookshelf').click();
 
+        for (let span of document.querySelectorAll('span.v-btn__content')) {
+            if (span.textContent === ' Preload Resources ') {
+                span.parentElement.previousElementSibling.firstElementChild.firstElementChild.click();
+                break;
+            }
+        }
+
         const buttons = document.querySelector('.mdi-palette').parentElement.parentElement.parentElement.querySelectorAll('button');
         for (let button of buttons) {
             button.click();
@@ -1471,14 +1478,26 @@ function onLoad(options) {
         new MutationObserver(function (mutations, observer) {
             for (let mutation of mutations) {
                 for (let node of mutation.removedNodes) {
+                    if (node.nodeType !== 1) continue;
                     const headline = node.querySelector('.headline');
                     if (!headline || headline.textContent != "Join Courtroom") continue;
                     if (options['auto-record']) document.querySelector('i.mdi-video').click();
                     observer.disconnect();
+                    
+                    const spectating = !document.querySelector('.frameTextarea');
+                    if (spectating) {
+                        for (let span of document.querySelectorAll('span.v-btn__content')) {
+                            if (span.textContent !== 'Join Room') continue;
+                            console.log(span.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild.click());
+                            break;
+                        }
+                        clickOff();
+                        window.postMessage(["room_spectated"])
+                    };
                 }
                 if (joinDialogShown) continue;
                 for (let node of mutation.addedNodes) {
-                    if (!node.querySelector) continue;
+                    if (node.nodeType !== 1) continue;
                     const headline = node.querySelector('.headline');
                     if (!headline || headline.textContent != "Join Courtroom") continue;
                     headline.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('hil-join-dialog');
