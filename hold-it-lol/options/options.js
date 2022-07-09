@@ -32,7 +32,7 @@ const tabs = [
     {
         title: 'Moderation',
         items: [
-            { key: 'remute', title: 'Automatic re-mute', description: '(Discord auth required) Automatically re-mutes a muted user if the rejoin.', preview: 'previews/placeholder.png' },
+            { key: 'remute', title: 'Automatic re-mute', description: '(Discord auth required) Automatically re-mutes a muted user if they rejoin.', preview: 'previews/placeholder.png' },
             { key: 'list-moderation', title: 'Moderate from user list', description: 'Quickly mute, ban anyone or make them a moderator from the user list.', preview: 'previews/placeholder.png' },
             { key: 'mute-character', requires: 'list-moderation', title: 'Mute only character', description: 'Someone\'s character is laggy or unpleasant? Hide just the character, while still seeing their messages.', preview: 'previews/placeholder.png' },
         ],
