@@ -57,7 +57,7 @@ It can be accessed by clicking the extension icon in the top right (you may need
 
 ## Discussion
 
-If you have any questions, problems or suggestions regarding the extension, you can join our [Discord server](https://discord.gg/5dMRR37FWt).
+If you have any questions, problems or suggestions regarding the extension, you can join our [Discord server](https://discord.gg/wHRCvNrx6Q).
 
 ## Installation instructions
 
