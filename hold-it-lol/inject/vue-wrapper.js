@@ -599,6 +599,12 @@ function main() {
             }
             socketStates['prev-message'] = data;
 
+        } else if (action === 'receive_plain_message') {
+            window.postMessage(['plain_message', {
+                text: data.text,
+                userId: data.userId,
+                username: roomInstance.users.find(user => user.id === data.userId).username,
+            }]);
         } else if (action === 'user_left') {
             if (socketStates.options['remute'] && data.discordUsername) {
                 if (muteInputInstance.selectedItems.find(user => user.id === data.id)) {

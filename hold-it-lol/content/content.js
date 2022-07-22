@@ -1427,13 +1427,7 @@ function onLoad(options) {
         }
 
         if (options['tts'] && states.ttsEnabled && states.ttsReadLogs && !messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
-            if (messageIcon.matches('.mdi-image-search')) {
-                chrome.runtime.sendMessage(["tts-speak", {
-                    text: document.querySelector('.v-list-item__title').innerText + ' added "' + messageText.slice(0, -' added as evidence'.length) + '" as evidence.'
-                }]);
-            } else {
-                chrome.runtime.sendMessage(["tts-speak", {text: messageNode.innerText.replaceAll('\n', ' ')}]);
-            }
+            chrome.runtime.sendMessage(["tts-speak", {text: messageNode.innerText.replaceAll('\n', ' ')}]);
         }
 
         // if (options['chat-fix']) {
@@ -1625,10 +1619,13 @@ function onLoad(options) {
                 
             const characterVoices = {};
             window.addEventListener('message', function(event) {
-                const [action, data] = event.data;
-                if (action === 'talking_started') {
+                if (!states.ttsEnabled) return;
 
-                    if (!states.ttsEnabled) return;
+                const [action, data] = event.data;
+                if (action === 'plain_message') {
+                    console.log(data.username + ' writes; ' + data.text);
+                    chrome.runtime.sendMessage(["tts-speak", {text: data.username + ' writes; ' + data.text}]);
+                } else if (action === 'talking_started') {
 
                     let text = data.plainText;
                     if (ttsReadNames) text = data.username + ' says; ' + text;
