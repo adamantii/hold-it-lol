@@ -22,7 +22,7 @@ const tabs = [
             { key: 'ctrl-effects', title: 'Effect hotkeys', description: 'Quickly add the Flash and Shake tags by pressing CTRL + 1, CTRL + 2, or CTRL + 3.', preview: 'previews/placeholder.png' },
             { key: 'dual-button', title: 'Dual effect button', description: 'Insert both Flash and Shake at the same time.', preview: 'previews/placeholder.png' },
             { key: 'smart-pre', title: 'Smart pre-animate', description: 'Disables your pose\'s pre-animation until you use a different pose.', preview: 'previews/placeholder.png' },
-            { key: 'smart-tn', title: 'Smart "to normal" poses', description: 'When switching to a new pose, automatically plays the previous pose\'s "to normal" when available.', preview: 'previews/placeholder.png' },
+            { key: 'smart-tn', title: 'Smart "to normal" poses', description: 'When switching to a new pose, automatically plays the previous pose\'s "to normal" when available.<br>(Lags less without Preload Resources.)', preview: 'previews/placeholder.png' },
         ],
     },
     {
@@ -32,6 +32,7 @@ const tabs = [
             { key: 'convert-chat-urls', title: 'Clickable chat links', description: 'URLs in chat messages become clickable. You can <i>also</i> right click to quickly save sounds & music.', preview: 'previews/placeholder.png' },
             { key: 'volume-sliders', title: 'Separate volume sliders', description: 'Adjust the volume of music and sound effects separately.', preview: 'previews/placeholder.png' },
             { key: 'fullscreen-evidence', title: 'Full screen in record', description: 'Mention full-screen evidence from the court record.', preview: 'previews/placeholder.png' },
+            // { key: 'spectator-toggle-preload', title: '"Preload Resources" while spectating', description: 'Toggle "Preload Resources" while spectating.', preview: 'previews/placeholder.png' },
         ],
     },
     {
