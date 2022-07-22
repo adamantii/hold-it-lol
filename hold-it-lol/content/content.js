@@ -854,6 +854,7 @@ function onLoad(options) {
 
                     if (options['menu-auto-close'] && !MENUS_NOT_AUTO_CLOSE.includes(title)) {
                         for (let button of menu.querySelectorAll('.v-btn:not(.success)')) {
+                            if (button.querySelector('span.v-btn__content').textContent.slice(0, 6) === 'Manage') continue;
                             button.addEventListener('click', clickOff);
                         }
                     }
