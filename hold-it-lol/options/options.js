@@ -11,7 +11,6 @@ const tabs = [
             // { key: 'merge-characters', title: 'Merge characters', description: 'Merge poses from multiple characters to work like a single character.', preview: 'previews/placeholder.png' },
             { key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close formatting menus after you\'ve used them.', preview: 'previews/placeholder.png' },
             { key: 'menu-hover', title: 'Open menus by hovering', description: 'Open formatting menus by hovering over them instead of clicking.', preview: 'previews/placeholder.png' },
-            { key: 'sound-search', title: 'Sounds and music: Focused search', description: 'Simply press enter to choose the top sound in the search list.', preview: 'previews/placeholder.png' },
             { key: 'sound-insert', title: 'Sounds and music: Quick inserting', description: 'Add sounds just by clicking on them in the list (without pressing "insert tag")<br>(Hold "SHIFT" to suppress)', preview: 'previews/placeholder.png' },
         ],
     },

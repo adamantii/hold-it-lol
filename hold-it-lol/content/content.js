@@ -858,7 +858,7 @@ function onLoad(options) {
                     }
                 };
 
-                if (options['sound-search']) {
+                if (true) { // sound-search
                     for (let input of menu.querySelectorAll('input[type="text"]')) {
                         input.addEventListener('input', function () {
                             const inputContent = getInputContent();
