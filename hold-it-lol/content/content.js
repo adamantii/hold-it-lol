@@ -548,8 +548,8 @@ function onLoad(options) {
             inputRow.appendChild(input);
             return input;
         }
-        const musicInput = testimonyInput('hil-tm-music', 'Testimony music #bgm', () => musicPlaying = false);
-        const selectInput = testimonyInput('hil-tm-select', 'CE statement #bgs');
+        const musicInput = testimonyInput('hil-tm-music', 'Testimony music', () => musicPlaying = false);
+        const selectInput = testimonyInput('hil-tm-select', 'Cross-exam click sound');
 
         function inputToTag(value, tagName) {
             const match = value.match(/[0-9]+/g)
@@ -617,13 +617,14 @@ function onLoad(options) {
 
             let preText;
             if (red && (statement == 0 || statement == statements.length - 1)) {
-                preText = '[##nt][#/r]';
+                text = '[##nt][#/r]' + text + '[/#]';
             } else if (crossExam) {
-                preText = continueSound + '[#/g]';
                 text = text.replaceAll(/\[#.*?\]/g, '');
+                text = text.replaceAll('[/#]', '');
+                text = continueSound + '[#/g]' + text + '[/#]';
             }
-            if (preText) {
-                text = preText + text + '[/#]';
+            if (!crossExam) {
+                text = '[##tm]' + text;
             }
 
             if (!crossExam && statement == statements.length - 1) {

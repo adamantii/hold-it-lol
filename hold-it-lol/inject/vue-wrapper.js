@@ -672,6 +672,7 @@ function main() {
 
         if (action === 'message') {
             if (socketStates['no-talk'] || data.frame.text.includes('[##nt]')) data.frame.doNotTalk = true;
+            if (data.frame.text.includes('[##tm]')) data.testimony = true;
             if (socketStates.options['smart-pre']) {
                 if (data.frame.poseAnimation) window.postMessage(['pre_animate_locked']);
                 if (data.frame.poseId === socketStates['prev-pre-pose']) data.frame.poseAnimation = false;
@@ -733,8 +734,6 @@ function main() {
                         }
                     ]);
                 }
-
-                data.testimony = true;
             })();
             if (socketStates.options['smart-pre']) socketStates['prev-pre-pose'] = data.frame.poseId;
             socketStates['prev-pose'] = data.frame.poseId;
