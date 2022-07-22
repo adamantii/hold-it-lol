@@ -26,6 +26,7 @@ function main() {
     const poseInstance = document.querySelector('.col-sm-9.col-10 > div > div.swiper-container,.col-sm-9.col-10 > div > div.v-text-field').parentElement.__vue__;
     const frameInstance = document.querySelector('.court-container').parentElement.parentElement.__vue__;
     const chatInstance = document.querySelector('.chat').parentElement.__vue__;
+    const getLastTabInstance = () => document.querySelector('.v-window.v-item-group.v-tabs-items').firstElementChild.lastElementChild.firstElementChild.__vue__;
     let muteInputInstance;
     for (let label of document.querySelectorAll('.v-select--chips.v-text-field label')) {
         if (label.textContent !== 'Muted Users') continue;
@@ -208,7 +209,7 @@ function main() {
             );
         }
 
-        if (socketStates.options['list-moderation']) {
+        if (socketStates.options['list-moderation'] || socketStates.options['chat-moderation']) {
             function userActionButton(onclick, iconName, tooltipText = null, classText = '', cssText = '') {
                 const button = document.createElement('button');
                 button.className = classText + ' v-btn v-btn--has-bg hil-icon-button hil-themed ' + getTheme();
@@ -229,18 +230,19 @@ function main() {
                 return button;
             }
 
-            function userActionButtonSet(usernameElement, constantId = false) {
+            function userActionButtonSet(usernameGetter, constantId = false) {
                 const container = document.createElement('div');
                 container.className = 'hil-user-action-buttons';
 
-                const initialId = getIDFromUsername(usernameElement.innerText);
+                const initialId = getIDFromUsername(usernameGetter());
+                container.dataset.userId = initialId;
                 const getId = function () {
                     if (constantId) return initialId;
-                    return getIDFromUsername(usernameElement.innerText);
+                    return getIDFromUsername(usernameGetter());
                 }
 
-                const isMuted = muteInputInstance.selectedItems.find(item => item.username === usernameElement.innerText);
-                const isCharacterMuted = initialId in socketStates['mutedCharUsers'];
+                const isMod = roomInstance.users.find(user => user.id === initialId).isMod;
+                const isMuted = muteInputInstance.selectedItems.find(item => item.username === usernameGetter());
 
                 container.appendChild(userActionButton(function () {
                     const id = getId();
@@ -251,17 +253,18 @@ function main() {
                     else mods.splice(mods.indexOf(id), 1);
 
                     socket.emit('set_mods', mods);
-                }, 'crown', 'Make moderator', 'hil-userlist-mod', userInstance.currentUser.isOwner ? '' : 'display: none;'));
+                },
+                    isMod ? 'account-arrow-down' : 'crown',
+                    isMod ? 'Remove moderator' : 'Make moderator',
+                    'hil-userlist-mod',
+                    userInstance.currentUser.isOwner ? '' : 'display: none;')
+                );
 
                 container.appendChild(userActionButton(function () {
-                    for (let label of document.querySelectorAll('.v-select--chips.v-text-field label')) {
-                        if (label.textContent !== 'Banned Users') continue;
-                        const banInputInstance = label.parentElement.parentElement.parentElement.parentElement.__vue__;
-                        const id = getIDFromUsername(usernameElement.innerText, banInputInstance.items);
-                        if (id === undefined) return;
-                        banInputInstance.selectItem(id);
-                        return;
-                    }
+                    let banList = getLastTabInstance().getBanUsers.map(user => user.id);
+                    banList = banList.filter(id => !roomInstance.users.map(user => user.id).includes(id));
+                    banList.push(getId());
+                    socket.emit('set_bans', banList);
                 }, 'skull', 'Ban', 'hil-userlist-ban', userInstance.currentUser.isOwner || userInstance.currentUser.isMod ? '' : 'display: none;'));
 
                 container.appendChild(userActionButton(function (button) {
@@ -272,41 +275,48 @@ function main() {
                     const muted = !muteInputInstance.selectedItems.find(item => item.id === id); // Counter-intuitive but trust it
                     const mutedIndicatorMethod = muted ? 'add' : 'remove';
                     const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
-                    button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-volume-off');
-                    button.querySelector('i').classList[mutedIndicatorMethod]('mdi-volume-high');
-                    container.parentElement.querySelector('.hil-user-action-icons .mdi-volume-off')?.classList[unmutedIndicatorMethod]('hil-hide');
-                    button.tooltip?.realign(muted ? 'Unmute' : 'Mute');
+                    for (let button of document.querySelectorAll('div.hil-user-action-buttons[data-user-id="' + id + '"] .hil-userlist-mute')) {
+                        button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-volume-off');
+                        button.querySelector('i').classList[mutedIndicatorMethod]('mdi-volume-high');
+                        container.parentElement.querySelector('.hil-user-action-icons .mdi-volume-off')?.classList[unmutedIndicatorMethod]('hil-hide');
+                        button.tooltip?.realign(muted ? 'Unmute' : 'Mute');
+                    }
                 },
                     isMuted ? 'volume-high' : 'volume-off',
                     isMuted ? 'Unmute' : 'Mute',
                     'hil-userlist-mute')
                 );
 
-                if (socketStates.options['mute-character']) container.appendChild(userActionButton(function (button) {
-                    const id = getId();
-                    if (id === undefined) return;
+                if (socketStates.options['mute-character']) {
+                    const isCharacterMuted = initialId in socketStates['mutedCharUsers'];
+                    container.appendChild(userActionButton(function (button) {
+                        const id = getId();
+                        if (id === undefined) return;
 
-                    let muted = id in socketStates['mutedCharUsers'];
-                    if (muted) delete socketStates['mutedCharUsers'][id];
-                    if (!muted) socketStates['mutedCharUsers'][id] = true;
+                        let muted = id in socketStates['mutedCharUsers'];
+                        if (muted) delete socketStates['mutedCharUsers'][id];
+                        if (!muted) socketStates['mutedCharUsers'][id] = true;
 
-                    for (const mutedId in socketStates['mutedCharUsers']) {
-                        if (muteInputInstance.items.find(item => item.id === Number(mutedId))) continue;
-                        delete socketStates['mutedCharUsers'][mutedId];
-                    }
+                        for (const mutedId in socketStates['mutedCharUsers']) {
+                            if (muteInputInstance.items.find(item => item.id === Number(mutedId))) continue;
+                            delete socketStates['mutedCharUsers'][mutedId];
+                        }
 
-                    muted = id in socketStates['mutedCharUsers'];
-                    const mutedIndicatorMethod = muted ? 'add' : 'remove';
-                    const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
-                    button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-eye-off');
-                    button.querySelector('i').classList[mutedIndicatorMethod]('mdi-eye');
-                    container.parentElement.querySelector('.hil-user-action-icons .mdi-eye-off')?.classList[unmutedIndicatorMethod]('hil-hide');
-                    button.tooltip?.realign(muted ? 'Show character' : 'Hide character');
-                },
-                    isCharacterMuted ? 'eye' : 'eye-off',
-                    isCharacterMuted ? 'Show character' : 'Hide character',
-                    'hil-userlist-mute-char')
-                );
+                        muted = id in socketStates['mutedCharUsers'];
+                        const mutedIndicatorMethod = muted ? 'add' : 'remove';
+                        const unmutedIndicatorMethod = !muted ? 'add' : 'remove';
+                        for (let button of document.querySelectorAll('div.hil-user-action-buttons[data-user-id="' + id + '"] .hil-userlist-mute-char')) {
+                            button.querySelector('i').classList[unmutedIndicatorMethod]('mdi-eye-off');
+                            button.querySelector('i').classList[mutedIndicatorMethod]('mdi-eye');
+                            container.parentElement.querySelector('.hil-user-action-icons .mdi-eye-off')?.classList[unmutedIndicatorMethod]('hil-hide');
+                            button.tooltip?.realign(muted ? 'Show character' : 'Hide character');
+                        }
+                    },
+                        isCharacterMuted ? 'eye' : 'eye-off',
+                        isCharacterMuted ? 'Show character' : 'Hide character',
+                        'hil-userlist-mute-char')
+                    );
+                }
 
                 container.removeWithTooltips = function () {
                     container.querySelectorAll('.hil-icon-button').forEach(button => button.tooltip?.remove());
@@ -318,72 +328,107 @@ function main() {
             function userActionIconSet() {
                 const container = document.createElement('div');
                 container.className = 'hil-user-action-icons';
-                // container.appendChild(createIcon('crown'));
-                // container.appendChild(createIcon('skull'));
                 container.appendChild(createIcon('volume-off', undefined, undefined, 'hil-hide'));
                 if (socketStates.options['mute-character']) container.appendChild(createIcon('eye-off', undefined, undefined, 'hil-hide'));
                 return container;
             }
 
-            function processUserListItem(userItem) {
-                const usernameElement = userItem.querySelector('.v-list-item__title');
-                if (usernameElement.innerText === userInstance.currentUser.username) return;
-                userItem.appendChild(userActionButtonSet(usernameElement, true));
-                const icons = userActionIconSet();
-                userItem.appendChild(icons);
-                if (muteInputInstance.selectedItems.find(user => user.username === usernameElement.innerText)) {
-                    icons.querySelector('.mdi-volume-off').classList.remove('hil-hide');
+            if (socketStates.options['list-moderation']) {
+                function processUserListItem(userItem) {
+                    const usernameElement = userItem.querySelector('.v-list-item__title');
+                    if (usernameElement.innerText === userInstance.currentUser.username) return;
+                    userItem.appendChild(userActionButtonSet(() => usernameElement.innerText, true));
+                    const icons = userActionIconSet();
+                    userItem.appendChild(icons);
+                    if (muteInputInstance.selectedItems.find(user => user.username === usernameElement.innerText)) {
+                        icons.querySelector('.mdi-volume-off').classList.remove('hil-hide');
+                    }
+                    if (socketStates.options['mute-character'] && getIDFromUsername(usernameElement.innerText) in socketStates['mutedCharUsers']) {
+                        icons.querySelector('.mdi-eye-off').classList.remove('hil-hide');
+                    }
                 }
-                if (socketStates.options['mute-character'] && getIDFromUsername(usernameElement.innerText) in socketStates['mutedCharUsers']) {
-                    icons.querySelector('.mdi-eye-off').classList.remove('hil-hide');
-                }
-            }
-
-            function reloadUserList() {
-                for (let userItem of userList.children) {
-                    userItem.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
-                    userItem.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
-                    processUserListItem(userItem);
-                }
-            }
-
-            let userList;
-            const userListButton = document.querySelector('.v-icon--left.mdi-account').parentElement.parentElement;
-            userListButton.addEventListener('click', function () {
-                for (let title of document.querySelectorAll('.v-toolbar__title')) {
-                    if (title.innerText !== 'Users') continue;
-
-                    userList = title.parentElement.parentElement.parentElement.querySelector('.v-list');
+                
+                function reloadUserList() {
                     for (let userItem of userList.children) {
+                        userItem.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
+                        userItem.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
                         processUserListItem(userItem);
                     }
-
-                    new MutationObserver(function (mutations) {
-                        for (let mutation of mutations) {
-                            for (let node of mutation.addedNodes) {
-                                processUserListItem(node);
-                            }
-                            for (let node of mutation.removedNodes) {
-                                node.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
-                                reloadUserList();
-                            }
-                        }
-                    }).observe(
-                        userList, { childList: true }
-                    );
-
-                    break;
                 }
-            });
+                
+                let userList;
+                const userListButton = document.querySelector('.v-icon--left.mdi-account').parentElement.parentElement;
+                userListButton.addEventListener('click', function () {
+                    for (let title of document.querySelectorAll('.v-toolbar__title')) {
+                        if (title.innerText !== 'Users') continue;
+                        
+                        userList = title.parentElement.parentElement.parentElement.querySelector('.v-list');
+                        for (let userItem of userList.children) {
+                            processUserListItem(userItem);
+                        }
+                        
+                        new MutationObserver(function (mutations) {
+                            for (let mutation of mutations) {
+                                for (let node of mutation.addedNodes) {
+                                    processUserListItem(node);
+                                }
+                                for (let node of mutation.removedNodes) {
+                                    node.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
+                                    reloadUserList();
+                                }
+                            }
+                        }).observe(
+                            userList, { childList: true }
+                        );
+                        
+                        break;
+                    }
+                });
+                
+                userInstance.$watch('currentUser', function (user) {
+                    if (!document.contains(userList)) return;
+                    
+                    if (user.isOwner) userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.removeProperty('display'));
+                    else userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.setProperty('display', 'none'));
+                    if (user.isOwner || user.isMod) userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.removeProperty('display'));
+                    else userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.setProperty('display', 'none'));
+                }, { deep: true });
+            }
 
-            userInstance.$watch('currentUser', function (user) {
-                if (!document.contains(userList)) return;
+            if (socketStates.options['chat-moderation']) {
+                const chat = document.querySelector('.chat').firstElementChild;
+                let gotTo100 = false;
+                const chatObserver = new MutationObserver(function(mutations) {
+                    for (let mutation of mutations) {
+                        if (mutation.target !== chat && !mutation.target.matches('.v-list-item__content') && !mutation.target.parentElement.matches('.v-list-item__content')) continue;
 
-                if (user.isOwner) userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.removeProperty('display'));
-                else userList.querySelectorAll('.hil-userlist-mod').forEach(button => button.style.setProperty('display', 'none'));
-                if (user.isOwner || user.isMod) userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.removeProperty('display'));
-                else userList.querySelectorAll('.hil-userlist-ban').forEach(button => button.style.setProperty('display', 'none'));
-            }, { deep: true });
+                        if (chat.childElementCount === 100) {
+                            if (gotTo100) {
+                                chat.firstElementChild.querySelector('.hil-user-action-buttons')?.removeWithTooltips();
+                                for (let buttons of chat.querySelectorAll('div.hil-user-action-buttons')) {
+                                    buttons.parentElement.previousElementSibling.appendChild(buttons);
+                                }
+                            }
+                            gotTo100 = true;
+                        }
+                        
+                        const messageNode = chat.lastElementChild;
+                        if (messageNode.querySelector('i').matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
+                            const username = messageNode.querySelector('.v-list-item__title').innerText;
+                            if (username === userInstance.currentUser.username) return;
+                            messageNode.appendChild(userActionButtonSet(() => username, true));
+                        }
+
+                        break;
+                    }
+                });
+
+                chatObserver.observe(chat, {
+                    childList: true,
+                    characterData: true,
+                    subtree: true
+                });
+            }
         }
 
         if (socketStates.options['volume-sliders']) {
@@ -559,9 +604,29 @@ function main() {
                 if (muteInputInstance.selectedItems.find(user => user.id === data.id)) {
                     socketStates['mutedLeftCache'][data.discordUsername] = true;
                 }
-                if (data.id in socketStates['mutedCharUsers']) {
+                if (socketStates.options['mute-character'] && data.id in socketStates['mutedCharUsers']) {
                     socketStates['hiddenLeftCache'][data.discordUsername] = true;
                 }
+            }
+            if (socketStates.options['chat-moderation']) {
+                for (let buttonContainer of document.querySelectorAll('div.hil-user-action-buttons[data-user-id="' + data.id + '"]')) {
+                    buttonContainer.removeWithTooltips();
+                }
+            }
+        } else if (action === 'set_mods') {
+            for (let icon of document.querySelectorAll('.hil-userlist-mod > i.mdi-crown')) {
+                const button = icon.parentElement;
+                if (!data.includes(parseInt(button.parentElement.dataset.userId))) continue;
+                icon.classList.add('mdi-account-arrow-down');
+                icon.classList.remove('mdi-crown');
+                button.tooltip?.realign('Remove moderator');
+            }
+            for (let icon of document.querySelectorAll('.hil-userlist-mod > i.mdi-account-arrow-down')) {
+                const button = icon.parentElement;
+                if (data.includes(parseInt(button.parentElement.dataset.userId))) continue;
+                icon.classList.remove('mdi-account-arrow-down');
+                icon.classList.add('mdi-crown');
+                button.tooltip?.realign('Make moderator');
             }
         } else if (action === 'user_joined') {
             if (socketStates.options['remute'] && data.discordUsername) {
@@ -582,10 +647,10 @@ function main() {
                     muteInputInstance.selectItem(data.id);
                     delete socketStates['mutedLeftCache'][data.discordUsername];
                     addJoinText('(Automatically re-muted)');
-                } else if (data.discordUsername in socketStates['hiddenLeftCache']) {
+                } else if (socketStates.options['mute-character'] && data.discordUsername in socketStates['hiddenLeftCache']) {
                     addJoinText('(Automatically re-hidden)');
                 }
-                if (data.discordUsername in socketStates['hiddenLeftCache']) {
+                if (socketStates.options['mute-character'] && data.discordUsername in socketStates['hiddenLeftCache']) {
                     socketStates['mutedCharUsers'][data.id] = true;
                     delete socketStates['hiddenLeftCache'][data.discordUsername];
                 }

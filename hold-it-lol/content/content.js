@@ -177,7 +177,7 @@ function kindaRandomChoice(array, seed = null) {
 function onLoad(options) {
 
 
-    console.log('holdit.lol - running main()');
+    console.log('holdit.lol v0.7 beta - running onLoad()');
     
     if (options['smart-tn']) injectScript(chrome.runtime.getURL('inject/closest-match/closest-match.js'));
     if (options['testimony-mode'] || options['no-talk-toggle'] || options['smart-pre'] || options['smart-tn'] || options['now-playing'] || options['list-moderation'] || options['mute-character'] || options['fullscreen-evidence']) injectScript(chrome.runtime.getURL('inject/vue-wrapper.js'));
@@ -1488,10 +1488,10 @@ function onLoad(options) {
                     if (spectating) {
                         for (let span of document.querySelectorAll('span.v-btn__content')) {
                             if (span.textContent !== 'Join Room') continue;
-                            console.log(span.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild.click());
+                            span.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild.click();
                             break;
                         }
-                        clickOff();
+                        setTimeout(clickOff, 1);
                         window.postMessage(["room_spectated"])
                     };
                 }
