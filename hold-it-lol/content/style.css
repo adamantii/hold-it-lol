@@ -25,14 +25,13 @@ body.hil-loading-menus #app > div:not(.v-application--wrap):not(.hil-join-dialog
 
 div.hil-message-toggles {
     margin-right: auto;
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 16px;
 }
 div.hil-message-toggles > div {
     margin-top: 0;
     margin-bottom: 0;
-    margin-right: 24px !important;
-}
-div.hil-message-toggles > div:not(:nth-child(1)):not(:nth-child(2)) {
-    margin-top: 16px !important;
 }
 
 div.hil-row {

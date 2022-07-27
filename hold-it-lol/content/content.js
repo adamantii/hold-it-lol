@@ -1061,14 +1061,11 @@ function onLoad(options) {
                     if (i !== toggleData.length - 1) toggle.classList.add('mr-4');
                     flipToggle.parentElement.appendChild(toggle);
                 }
-                
-                flipToggle.style.cssText = 'margin-right:16px!important';
             }
 
             toggles.appendChild(testimonyToggle);
-            for (let i = 2; i < toggles.childElementCount; i += 3) {
-                const br = document.createElement('br');
-                toggles.insertBefore(br, toggles.children[i]);
+            for (let toggle of toggles.children) {
+                toggle.style.cssText = 'margin-right:16px!important';
             }
 
             if (options['old-toggles']) {
