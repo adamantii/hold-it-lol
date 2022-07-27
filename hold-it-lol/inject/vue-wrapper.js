@@ -712,6 +712,18 @@ function main() {
                 if (action === 'room_spectated') processVolumeSliders();
             })
         }
+
+        if (socketStates.options['disable-testimony-shortcut']) {
+            const shortcutDiv = document.querySelector('.v-main__wrap > div');
+            shortcutDiv.addEventListener('shortkey', function(event) {
+                if (event.srcKey !== 't' || event.hilIgnore === true) return;
+    
+                const newEvent = new CustomEvent('shortkey');
+                newEvent.srcKey = event.srcKey;
+                newEvent.hilIgnore = true;
+                shortcutDiv.dispatchEvent(newEvent);
+            });
+        }
     });
 
 

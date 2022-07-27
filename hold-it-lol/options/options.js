@@ -8,6 +8,7 @@ const tabs = [
         items: [
             { key: 'auto-record', title: 'Auto-recording', description: 'Automatically start recording joined courtrooms (saving is manual).', preview: 'previews/placeholder.png' },
             { key: 'save-last-character', title: 'Remember last character', description: 'The last character you used (with the extension on) is selected by default in the next court.', preview: 'previews/placeholder.png' },
+            { key: 'disable-testimony-shortcut', title: 'Disable T key', description: 'Turn off the "T" hotkey that toggles "give testimony".', preview: 'previews/placeholder.png' },
             // { key: 'merge-characters', title: 'Merge characters', description: 'Merge poses from multiple characters to work like a single character.', preview: 'previews/placeholder.png' },
             { key: 'menu-auto-close', title: 'Auto-closing menus', description: 'Automatically close formatting menus after you\'ve used them.', preview: 'previews/placeholder.png' },
             { key: 'menu-hover', title: 'Open menus by hovering', description: 'Open formatting menus by hovering over them instead of clicking.', preview: 'previews/placeholder.png' },
