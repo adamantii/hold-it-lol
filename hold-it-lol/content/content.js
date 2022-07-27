@@ -1072,6 +1072,14 @@ function onLoad(options) {
                 const optionsIcon = document.querySelector('.v-btn__content .v-icon.mdi-cog');
                 optionsIcon.classList.remove('mdi-cog');
                 optionsIcon.classList.add('mdi-tooltip-image');
+
+                new MutationObserver(function () {
+                    if (optionsIcon.classList.contains('mdi-cog')) {
+                        optionsIcon.classList.remove('mdi-cog');
+                        optionsIcon.classList.add('mdi-tooltip-image');
+                    }
+                }).observe(optionsIcon, { attributes: true, attributeFilter: ['class'] });
+
                 optionsIcon.parentElement.parentElement.parentElement.parentElement.parentElement.prepend(toggles);
             }
 
