@@ -107,6 +107,179 @@ function main() {
         return muteCharacter
     }
 
+    function preloadHiddenCharacters() {
+        frameInstance.customCharacters[669437] = {
+            "partial": true,
+            "id": 669437,
+            "name": "Hidden (Defense)",
+            "namePlate": "Hidden",
+            "side": "defense",
+            "blipUrl": "/Audio/blip.wav",
+            "iconUrl": null,
+            "galleryImageUrl": null,
+            "galleryAJImageUrl": null,
+            "backgroundId": 189,
+            "limitWidth": true,
+            "alignment": null,
+            "offsetX": 0,
+            "offsetY": 0,
+            "objectionVolume": 1,
+            "poses": [
+                {
+                    "id": 8525792,
+                    "name": "Stand",
+                    "idleImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040162122149908/DefenseA.webp",
+                    "speakImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040162369617951/DefenseB.webp",
+                    "isSpeedlines": false,
+                    "iconUrl": "",
+                    "order": 0,
+                    "musicFileName": "Trial",
+                    "states": [],
+                    "audioTicks": [],
+                    "functionTicks": [],
+                    "characterId": 669437
+                }
+            ],
+            "bubbles": []
+        };
+        frameInstance.customCharacters[669438] = {
+            "partial": true,
+            "id": 669438,
+            "name": "Hidden (Prosecution)",
+            "namePlate": "Hidden",
+            "side": "prosecution",
+            "blipUrl": "/Audio/blip.wav",
+            "iconUrl": null,
+            "galleryImageUrl": null,
+            "galleryAJImageUrl": null,
+            "backgroundId": 194,
+            "limitWidth": true,
+            "alignment": null,
+            "offsetX": 0,
+            "offsetY": 0,
+            "objectionVolume": 1,
+            "poses": [
+                {
+                    "id": 8525810,
+                    "name": "Stand",
+                    "idleImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040162583535636/ProsecutionA.webp",
+                    "speakImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040162805837874/ProsecutionB.webp",
+                    "isSpeedlines": false,
+                    "iconUrl": "",
+                    "order": 0,
+                    "musicFileName": "Trial",
+                    "states": [],
+                    "audioTicks": [],
+                    "functionTicks": [],
+                    "characterId": 669438
+                }
+            ],
+            "bubbles": []
+        };
+        frameInstance.customCharacters[669439] = {
+            "partial": true,
+            "id": 669439,
+            "name": "Hidden (Witness)",
+            "namePlate": "Hidden",
+            "side": "witness",
+            "blipUrl": "/Audio/blip-female.wav",
+            "iconUrl": null,
+            "galleryImageUrl": null,
+            "galleryAJImageUrl": null,
+            "backgroundId": 197,
+            "limitWidth": true,
+            "alignment": null,
+            "offsetX": 0,
+            "offsetY": 0,
+            "objectionVolume": 1,
+            "poses": [
+                {
+                    "id": 8525809,
+                    "name": "Stand",
+                    "idleImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040163053285396/WitnessA.webp",
+                    "speakImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040163288170537/WitnessB.webp",
+                    "isSpeedlines": false,
+                    "iconUrl": "",
+                    "order": 0,
+                    "musicFileName": "Trial",
+                    "states": [],
+                    "audioTicks": [],
+                    "functionTicks": [],
+                    "characterId": 669439
+                }
+            ],
+            "bubbles": []
+        };
+        frameInstance.customCharacters[669440] = {
+            "partial": true,
+            "id": 669440,
+            "name": "Hidden (Counsel)",
+            "namePlate": "Hidden",
+            "side": "counsel",
+            "blipUrl": "/Audio/blip.wav",
+            "iconUrl": null,
+            "galleryImageUrl": null,
+            "galleryAJImageUrl": null,
+            "backgroundId": 187,
+            "limitWidth": true,
+            "alignment": null,
+            "offsetX": 0,
+            "offsetY": 0,
+            "objectionVolume": 1,
+            "poses": [
+                {
+                    "id": 8525795,
+                    "name": "Stand",
+                    "idleImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040163594362931/CounselA.webp",
+                    "speakImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040163925696522/CounselB.webp",
+                    "isSpeedlines": false,
+                    "iconUrl": "",
+                    "order": 0,
+                    "musicFileName": "Trial",
+                    "states": [],
+                    "audioTicks": [],
+                    "functionTicks": [],
+                    "characterId": 669440
+                }
+            ],
+            "bubbles": []
+        };
+        frameInstance.customCharacters[669441] = {
+            "partial": true,
+            "id": 669441,
+            "name": "Hidden (Judge)",
+            "namePlate": "Hidden",
+            "side": "judge",
+            "blipUrl": "/Audio/blip.wav",
+            "iconUrl": null,
+            "galleryImageUrl": null,
+            "galleryAJImageUrl": null,
+            "backgroundId": 192,
+            "limitWidth": true,
+            "alignment": null,
+            "offsetX": 0,
+            "offsetY": 0,
+            "objectionVolume": 1,
+            "poses": [
+                {
+                    "id": 8525794,
+                    "name": "Stand",
+                    "idleImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040164286418944/JudgeA.webp",
+                    "speakImageUrl": "https://cdn.discordapp.com/attachments/867018629089460234/984040164701650944/JudgeB.webp",
+                    "isSpeedlines": false,
+                    "iconUrl": "",
+                    "order": 0,
+                    "musicFileName": "Trial",
+                    "states": [],
+                    "audioTicks": [],
+                    "functionTicks": [],
+                    "characterId": 669441
+                }
+            ],
+            "bubbles": []
+        };
+    }
+
     function createTooltip(text, anchorElement) {
         const tooltip = document.createElement('div');
         tooltip.className = 'v-tooltip__content hil-small-tooltip hil-hide';
@@ -156,7 +329,10 @@ function main() {
         if (socketStates.options['testimony-mode']) socketStates['testimonyPoses'] = {};
         if (socketStates.options['list-moderation'] && socketStates.options['mute-character']) socketStates['mutedCharUsers'] = {};
         if (socketStates.options['remute']) socketStates['mutedLeftCache'] = {};
-        if (socketStates.options['mute-character']) socketStates['hiddenLeftCache'] = {};
+        if (socketStates.options['mute-character']) {
+            socketStates['hiddenLeftCache'] = {};
+            preloadHiddenCharacters(frameInstance);
+        }
 
         if (socketStates.options['save-last-character']) {
             const storedId = localStorage['hil-last-character'];
