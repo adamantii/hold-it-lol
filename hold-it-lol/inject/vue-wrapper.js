@@ -335,27 +335,18 @@ function main() {
         }
 
         if (socketStates.options['save-last-character']) {
-            const storedId = localStorage['hil-last-character'];
-            let loaded = false;
+            const storedId = localStorage['hil-last-character-id'];
             if (storedId >= 1000) {
-                document.querySelector('.icon-character .v-image__image--cover').style.backgroundImage = 'url("/Images/Loading.gif")';
-                const unwatch = characterListInstance.$watch('customCharactersDropdown.length', function (length) {
-                    if (length > 0) {
-                        characterListInstance.setCustomCharacter(storedId);
-                        loaded = true;
-                        unwatch();
-                    }
-                });
+                characterListInstance.customList.push(JSON.parse(localStorage['hil-last-cc-json']));
+                characterListInstance.setCustomCharacter(storedId);
             } else if (storedId > 1) {
                 characterListInstance.setCharacter(storedId);
-                loaded = true;
-            } else {
-                loaded = true;
             }
 
             characterInstance.$watch('currentCharacter.id', function (id) {
-                if (!loaded) return;
-                localStorage['hil-last-character'] = id;
+                localStorage['hil-last-character-id'] = id;
+                if (id < 1000) return;
+                localStorage['hil-last-cc-json'] = JSON.stringify(characterInstance.currentCharacter);
             });
         }
 
