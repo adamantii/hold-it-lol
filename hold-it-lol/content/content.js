@@ -845,6 +845,9 @@ function onLoad(options) {
 
         setTimeout(function () {
 
+            const courtRecordContainer = [...document.querySelectorAll('span.my-auto')].find(span => span.textContent === ' Court Record ')?.parentElement;
+            [...courtRecordContainer.querySelectorAll('.v-btn__content')].find(span => span.textContent === ' Close ')?.click();
+
             const menus = app.querySelectorAll(':scope > div[role="menu"]');
             for (let menu of menus) {
                 const titleElem = menu.querySelector('.v-list-item__title') || menu.querySelector('.v-label');
