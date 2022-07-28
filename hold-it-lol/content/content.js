@@ -816,7 +816,9 @@ function onLoad(options) {
     let dualEffectMode = false;
 
     function premakeMenus() {
-        document.body.classList.add('hil-loading-menus');
+        if (!document.querySelector('div.v-dialog__content > div.v-dialog > div.v-card.v-sheet:not(.v-card--flat)')) {
+            document.body.classList.add('hil-loading-menus');
+        }
 
         document.querySelector('.v-btn__content .mdi-menu').click();
         document.querySelector('.v-btn__content .mdi-cog').click();
@@ -1502,9 +1504,8 @@ function onLoad(options) {
                 if (joinDialogShown) continue;
                 for (let node of mutation.addedNodes) {
                     if (node.nodeType !== 1) continue;
-                    const headline = node.querySelector('.headline');
-                    if (!headline || headline.textContent != "Join Courtroom") continue;
-                    headline.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('hil-join-dialog');
+                    if (!node.firstElementChild?.firstElementChild?.matches('div.v-card.v-sheet:not(.v-card--flat)')) continue;
+                    node.classList.add('hil-join-dialog');
                     document.body.classList.remove('hil-loading-menus');
                     joinDialogShown = true;
                 }
