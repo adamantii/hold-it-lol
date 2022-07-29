@@ -628,11 +628,11 @@ function main() {
                     masterIcon.textContent = 'All';
                     masterIcon.style.fontSize = '120%';
 
-                    let bgmVolume = 'hil-bgm-volume' in localStorage ? parseInt(localStorage['hil-bgm-volume']) : 100;
-                    let bgsVolume = 'hil-bgs-volume' in localStorage ? parseInt(localStorage['hil-bgs-volume']) : 100;
+                    let bgmVolume = 'hil-bgm-volume' in localStorage ? parseInt(localStorage['hil-bgm-volume']) : 99;
+                    let bgsVolume = 'hil-bgs-volume' in localStorage ? parseInt(localStorage['hil-bgs-volume']) : 99;
 
                     function setSlider(value, sliderContainer, callback = null) {
-                        if (value > 100) value = 100;
+                        if (value > 99) value = 99;
                         else if (value < 0) value = 0;
                         sliderContainer.querySelector('.v-slider__track-fill').style.width = value + '%';
                         sliderContainer.querySelector('.v-slider__thumb-container').style.left = value + '%';
