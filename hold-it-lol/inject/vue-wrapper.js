@@ -17,6 +17,7 @@ function main() {
         fallback: { characterId: 669439, poseId: 8525809 },
     }
 
+    const appState = app.__vue__.$store.state;
     const socket = document.querySelector('.v-main__wrap > div').__vue__.$socket;
     const roomInstance = document.querySelector('div.mx-auto.v-card--flat.v-sheet').parentElement.__vue__;
     const toolbarInstance = document.querySelector('.mx-auto.v-card header').__vue__.$parent;
@@ -322,6 +323,8 @@ function main() {
             presentButton.__vue__.$watch('classes', function () {
                 fullscreenButton.className = presentButton.className;
             });
+        } else if (action === 'set_preload') {
+            appState.courtroom.settings.preloadEnabled = data;
         }
     });
 

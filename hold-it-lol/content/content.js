@@ -1492,13 +1492,30 @@ function onLoad(options) {
                     
                     states.spectating = !document.querySelector('.frameTextarea');
                     if (states.spectating) {
+                        window.postMessage(["room_spectated"]);
+
+                        let volumeButton;
                         for (let span of document.querySelectorAll('span.v-btn__content')) {
                             if (span.textContent !== 'Join Room') continue;
-                            span.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild.click();
+                            volumeButton = span.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild;
                             break;
                         }
+                        
+                        if (!volumeButton) break;
+
+                        volumeButton.click();
                         setTimeout(clickOff, 1);
-                        window.postMessage(["room_spectated"])
+                        if (options['spectator-preload']) {
+                            let preload = true;
+                            const preloadButton = iconToggleButton(function() {
+                                preload = !preload;
+                                window.postMessage(['set_preload', preload]);
+                                return preload;
+                            }, 'Preload Resources', 'error', '', true);
+                            preloadButton.style.cssText = 'height:28px!important;margin-left:8px;';
+                            volumeButton.parentElement.appendChild(preloadButton);
+                        }
+
                     } else {
                         observer.disconnect();
                     }
