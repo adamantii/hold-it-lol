@@ -1511,7 +1511,7 @@ function onLoad(options) {
                                 preload = !preload;
                                 window.postMessage(['set_preload', preload]);
                                 return preload;
-                            }, 'Preload Resources', 'error', '', true);
+                            }, 'PRELOAD RESOURCES', 'error', '', true);
                             preloadButton.style.cssText = 'height:28px!important;margin-left:8px;';
                             volumeButton.parentElement.appendChild(preloadButton);
                         }
