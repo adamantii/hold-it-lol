@@ -1487,11 +1487,11 @@ function onLoad(options) {
                     if (node.nodeType !== 1) continue;
                     const headline = node.querySelector('.headline');
                     if (!headline || headline.textContent != "Join Courtroom") continue;
+                    if (states.spectating) continue;
                     if (options['auto-record']) document.querySelector('i.mdi-video').click();
-                    observer.disconnect();
                     
-                    const spectating = !document.querySelector('.frameTextarea');
-                    if (spectating) {
+                    states.spectating = !document.querySelector('.frameTextarea');
+                    if (states.spectating) {
                         for (let span of document.querySelectorAll('span.v-btn__content')) {
                             if (span.textContent !== 'Join Room') continue;
                             span.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.firstElementChild.firstElementChild.click();
@@ -1499,7 +1499,16 @@ function onLoad(options) {
                         }
                         setTimeout(clickOff, 1);
                         window.postMessage(["room_spectated"])
-                    };
+                    } else {
+                        observer.disconnect();
+                    }
+                }
+                if (states.spectating) {
+                    for (let node of mutation.addedNodes) {
+                        const joinSpan = [...node.querySelectorAll('span.v-btn__content')].find(span => span.innerText === 'JOIN');
+                        if (joinSpan) joinSpan.innerText = 'RELOAD';
+                        break;
+                    }
                 }
                 if (joinDialogShown) continue;
                 for (let node of mutation.addedNodes) {

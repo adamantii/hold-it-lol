@@ -722,7 +722,11 @@ function main() {
     socket.onevent = function (e) {
         const [action, data] = e.data;
 
-        if (action === 'receive_message') {
+        if (action === 'spectate_success') {
+            socketStates.spectating = true;
+        } else if (action === 'join_success' && socketStates.spectating) {
+            location.reload();
+        } else if (action === 'receive_message') {
 
             if (socketStates.options['tts'] && socketStates['tts-enabled']) data.frame.frameActions.push({ "actionId": 5 });
             if (socketStates.options['list-moderation'] && socketStates.options['mute-character']) {
