@@ -34,6 +34,7 @@ const tabs = [
             { key: 'volume-sliders', title: 'Separate volume sliders', description: 'Adjust the volume of music and sound effects separately.', preview: 'previews/placeholder.png' },
             { key: 'fullscreen-evidence', title: 'Full screen in record', description: 'Mention full-screen evidence from the court record.', preview: 'previews/placeholder.png' },
             { key: 'spectator-preload', title: '"Preload Resources" while spectating', description: 'Toggle "Preload Resources" while spectating.', preview: 'previews/placeholder.png' },
+            { key: 'reload-ccs', title: 'Reload custom characters', description: 'Reload others\' custom characters from Settings to see their changes without reloading the page.', preview: 'previews/placeholder.png' },
         ],
     },
     {

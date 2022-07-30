@@ -1696,6 +1696,25 @@ function onLoad(options) {
         });
     }
 
+    if (options['reload-ccs']) {
+        const reloadCCButton = createButton(function() {
+            window.postMessage(['reload_ccs']);
+            reloadCCButton.classList.remove('primary');
+            reloadCCButton.classList.add('v-btn--disabled');
+            setTimeout(function() {
+                reloadCCButton.classList.add('primary');
+                reloadCCButton.classList.remove('v-btn--disabled');
+            }, 5000);
+        }, 'RELOAD CUSTOMS', '', 'height:28px!important;');
+
+        reloadCCButton.className = 'v-btn v-btn--has-bg v-size--small primary hil-themed';
+        reloadCCButton.prepend(createIcon('refresh', 18, 'margin-right: 8px;'));
+
+        const reloadDataButton = [...document.querySelectorAll('.v-btn__content')].find(span => span.textContent === ' Reload Data ').parentElement;
+        reloadDataButton.style.setProperty('margin-right', '16px')
+        reloadDataButton.parentElement.appendChild(reloadCCButton);
+    }
+
 
     themeUpdate();
 

@@ -279,6 +279,13 @@ function main() {
             ],
             "bubbles": []
         };
+        if (socketStates.options['reload-ccs']) {
+            socketStates.noReloadCCs[669437] = true;
+            socketStates.noReloadCCs[669438] = true;
+            socketStates.noReloadCCs[669439] = true;
+            socketStates.noReloadCCs[669440] = true;
+            socketStates.noReloadCCs[669441] = true;
+        }
     }
 
     function createTooltip(text, anchorElement) {
@@ -325,17 +332,33 @@ function main() {
             });
         } else if (action === 'set_preload') {
             appState.courtroom.settings.preloadEnabled = data;
+        } else if (action === 'reload_ccs') {
+            for (let id in frameInstance.customCharacters) {
+                if (!(id in socketStates.noReloadCCs)) {
+                    delete frameInstance.customCharacters[id];
+                }
+            };
         }
     });
 
     socketStates.optionsLoaded.then(function () {
         if (socketStates.options['testimony-mode']) socketStates['testimonyPoses'] = {};
         if (socketStates.options['list-moderation'] && socketStates.options['mute-character']) socketStates['mutedCharUsers'] = {};
-        if (socketStates.options['remute']) socketStates['mutedLeftCache'] = {};
+        if (socketStates.options['remute']) socketStates.mutedLeftCache = {};
+        if (socketStates.options['reload-ccs']) socketStates.noReloadCCs = {};
         if (socketStates.options['mute-character']) {
             socketStates['hiddenLeftCache'] = {};
             preloadHiddenCharacters(frameInstance);
         }
+
+        app.__vue__.$watch('$store.state.assets.character.loading', function(charactersLoading) {
+            if (charactersLoading) return;
+            if (socketStates.options['reload-ccs']) {
+                for (let character of appState.assets.character.customList) {
+                    socketStates.noReloadCCs[character.id] = true;
+                };
+            }
+        })
 
         if (socketStates.options['save-last-character']) {
             const storedId = localStorage['hil-last-character-id'];
