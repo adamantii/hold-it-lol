@@ -744,6 +744,15 @@ function onLoad(options) {
                 toStatement(statementI);
             }
         }
+
+        window.addEventListener('message', function(event) {
+            const [action, data] = event.data;
+            if (action !== 'plain_message') return;
+
+            if (testRegex(data.text, '[> ]*') && data.text.indexOf('>') !== -1) states.testimonyArrow('>');
+            else if (testRegex(data.text, '[< ]*') && data.text.indexOf('<') !== -1) states.testimonyArrow('<');
+            else if (testRegex(data.text, '<[0-9]*?>')) states.testimonyIndex(Number(data.text.slice(1, -1)));
+        });     
     }
 
 
@@ -1430,12 +1439,6 @@ function onLoad(options) {
 
         if (musicPlaying && messageText.includes(STOP_MUSIC_TEXT)) {
             musicPlaying = false;
-        }
-
-        if (options['testimony-mode']) {
-            if (testRegex(messageText, '[> ]*') && messageText.indexOf('>') !== -1) states.testimonyArrow('>');
-            else if (testRegex(messageText, '[< ]*') && messageText.indexOf('<') !== -1) states.testimonyArrow('<');
-            else if (testRegex(messageText, '<[0-9]*?>')) states.testimonyIndex(Number(messageText.slice(1, -1)));
         }
 
         if (options['tts'] && states.ttsEnabled && states.ttsReadLogs && !messageIcon.matches('.mdi-account,.mdi-crown,.mdi-account-tie')) {
