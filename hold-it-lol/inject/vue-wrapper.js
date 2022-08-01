@@ -750,7 +750,7 @@ function main() {
 
         if (action === 'spectate_success') {
             socketStates.spectating = true;
-        } else if (action === 'join_success' && socketStates.spectating) {
+        } else if ((action === 'join_success' || action === 'join_discord_success') && socketStates.spectating) {
             location.reload();
         } else if (action === 'receive_message') {
 

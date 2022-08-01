@@ -1484,10 +1484,10 @@ function onLoad(options) {
         new MutationObserver(function (mutations, observer) {
             for (let mutation of mutations) {
                 for (let node of mutation.removedNodes) {
-                    if (node.nodeType !== 1) continue;
+                    if (states.spectating || node.nodeType !== 1 || !node.classList.contains('v-dialog__content')) continue;
                     const headline = node.querySelector('.headline');
                     if (!headline || headline.textContent != "Join Courtroom") continue;
-                    if (states.spectating) continue;
+
                     if (options['auto-record']) document.querySelector('i.mdi-video').click();
                     
                     states.spectating = !document.querySelector('.frameTextarea');
@@ -1516,15 +1516,22 @@ function onLoad(options) {
                             volumeButton.parentElement.appendChild(preloadButton);
                         }
 
+                        new MutationObserver(function(mutations) {
+                            for (let mutation of mutations) {
+                                for (let node of mutation.addedNodes) {
+                                    if (node.nodeType !== 1) continue;
+                                    const joinSpan = [...node.querySelectorAll('span.v-btn__content')].find(span => span.innerText === 'JOIN');
+                                    if (joinSpan) joinSpan.innerText = 'RELOAD';
+                                    break;
+                                }
+                            }
+                        }).observe(app, {
+                            childList: true,
+                            subtree: true,
+                        });
+
                     } else {
                         observer.disconnect();
-                    }
-                }
-                if (states.spectating) {
-                    for (let node of mutation.addedNodes) {
-                        const joinSpan = [...node.querySelectorAll('span.v-btn__content')].find(span => span.innerText === 'JOIN');
-                        if (joinSpan) joinSpan.innerText = 'RELOAD';
-                        break;
                     }
                 }
                 if (joinDialogShown) continue;
@@ -1660,7 +1667,6 @@ function onLoad(options) {
 
                 const [action, data] = event.data;
                 if (action === 'plain_message') {
-                    console.log(data.username + ' writes; ' + data.text);
                     chrome.runtime.sendMessage(["tts-speak", {text: data.username + ' writes; ' + data.text}]);
                 } else if (action === 'talking_started') {
 
