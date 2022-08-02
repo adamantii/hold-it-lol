@@ -14,43 +14,57 @@ It can be accessed by clicking the extension icon in the top right (you may need
 <blockquote>
 <dl>
 <dt>Auto-recording</dt>
-<dd>Automatically start recording joined courtrooms.</dd>
+<dt>Automatically start recording joined courtrooms (saving is manual).</dt>
 <dt>Remember last character</dt>
-<dd>The last character you used is selected by default in the next courtroom.</dd>
-<dt>Clickable chat links</dt>
-<dd>URLs in chat messages become clickable. You can <i>also</i> right click to quickly save sounds & music.</dd>
+<dt>The last character you used (with the extension on) is selected by default in the next court.</dt>
+<dt>Disable T key</dt>
+<dt>Turn off the "T" hotkey that toggles "give testimony".</dt>
 <dt>Auto-closing menus</dt>
-<dd>Automatically close formatting menus after you've used them.</dd>
+<dt>Automatically close formatting menus after you've used them.</dt>
 <dt>Open menus by hovering</dt>
-<dd>Open formatting menus by hovering over them instead of clicking.</dd>
-<dt>Sounds and music: Focused search</dt>
-<dd>Simply press enter to choose the top sound in the search list.</dd>
+<dt>Open formatting menus by hovering over them instead of clicking.</dt>
 <dt>Sounds and music: Quick inserting</dt>
-<dd>Add sounds just by clicking on them in the list.</dd>
+<dt>Add sounds just by clicking on them in the list (without pressing "insert tag")</dt>
+<dt>"No talking" toggle</dt>
+<dt>Disables your character's talking animation, just like in Maker.</dt>
 <dt>Quickly typing pauses</dt>
-<dd>Type , again after a , (or other punctuation marks) to add delays.</dd>
+<dt>Type , again after a , (or other punctuation marks) to add delays.</dt>
 <dt>Effect hotkeys</dt>
-<dd>Quickly add the Flash and Shake tags by pressing CTRL + 1, CTRL + 2, or CTRL + 3.</dd>
+<dt>Quickly add the Flash and Shake tags by pressing CTRL + 1, CTRL + 2, or CTRL + 3.</dt>
 <dt>Dual effect button</dt>
-<dd>Insert both Flash and Shake at the same time.</dd>
+<dt>Insert both Flash and Shake at the same time.</dt>
 <dt>Smart pre-animate</dt>
-<dd>Disables your pose's pre-animation until you use a different pose.</dd>
+<dt>Disables your pose's pre-animation until you use a different pose.</dt>
 <dt>Smart "to normal" poses</dt>
-<dd>When switching to a new pose, automatically plays the previous pose's "to normal" when available.</dd>
+<dt>When switching to a new pose, automatically plays the previous pose's "to normal" when available.</dt>
+<dt>Classic toggles</dt>
+<dt>Toggles like "Pre-animate" are accessible outside of a menu (as it was in the past).</dt>
+<dt>Clickable chat links</dt>
+<dt>URLs in chat messages become clickable. You can <i>also</i> right click to quickly save sounds & music.</dt>
+<dt>Separate volume sliders</dt>
+<dt>Adjust the volume of music and sound effects separately.</dt>
+<dt>Full screen in record</dt>
+<dt>Mention full-screen evidence from the court record.</dt>
+<dt>"Preload Resources" while spectating</dt>
+<dt>Toggle "Preload Resources" while spectating.</dt>
+<dt>Reload custom characters</dt>
+<dt>Reload others' custom characters from Settings to see their changes without reloading the page.</dt>
 <dt>Automatic re-mute</dt>
-<dd>Automatically re-mutes a muted user if the rejoin.</dd>
+<dt>Automatically re-mutes a muted user if they rejoin.</dt>
+<dt>Moderate from chat log</dt>
+<dt>Quickly mute or ban using buttons next to their messages.</dt>
 <dt>Moderate from user list</dt>
-<dd>Quickly mute, ban anyone or make them a moderator from the user list.</dd>
-<dt>Mute only character</dt>
-<dd>Someone's character is laggy or unpleasant? Hide just the character, while still seeing their messages.</dd>
+<dt>Quickly mute, ban anyone or make them a moderator from the user list.</dt>
+<dt>Hide character</dt>
+<dt>Someone's character is laggy or unpleasant? Mute just the character, while still seeing their messages.</dt>
 <dt>Roleplay testimony</dt>
-<dd>A helpful witness testimony player for roleplay.</dd>
+<dt>A helpful witness testimony player for roleplay.</dt>
 <dt>Add evidence from table</dt>
-<dd>Automatically add lots of evidence via a copy-pasted table from a document. (Works with tables where each evidence takes up a row)</dd>
+<dt>Automatically add lots of evidence via a copy-pasted table from a document.</dt>
 <dt>"Now playing..." display</dt>
-<dd>Shows the name given to the currently playing track.</dd>
+<dt>Shows the name given to the currently playing track.</dt>
 <dt>Text-to-speech</dt>
-<dd>Plays messages using wacky text-to-speech voices.</dd>
+<dt>Plays messages using wacky text-to-speech voices.</dt>
 </dl>
 </blockquote>
 </details>
@@ -61,7 +75,7 @@ If you have any questions, problems or suggestions regarding the extension, you 
 
 ## Installation instructions
 
-1. Download the top .zip file from the [latest release on Github](https://github.com/adamantii/hold-it-lol/releases/tag/v0.6-beta).
+1. Download the top .zip file from the [latest release on Github](https://github.com/adamantii/hold-it-lol/releases/tag/v0.7-beta).
 1. Unzip the file and you should have a folder named plainly `hold-it-lol`.
 1. In your Chrome-based browser go to the extensions page (for Chrome or Edge, `chrome://extensions` or `edge://extensions`).
 1. Enable Developer Mode in the top right.
@@ -69,7 +83,6 @@ If you have any questions, problems or suggestions regarding the extension, you 
 
 ## Known Issues
 
-Known bug warnings (as of v0.6 beta):
+Known bug warnings (as of v0.7 beta):
 
-- Due to the way the extension loads, many UI elements break if you begin spectating a court and then join the court in the same tab; reload and join without spectating to resolve.
-- "No talking" toggle button doesn't work. You can still use the [##nt] custom tag to disable talking for a frame.
+- Due to the way the extension loads, spectating breaks some UI elements if you join after spectating; you'll be prompted to reload and join without spectating.
