@@ -57,6 +57,22 @@ const tabs = [
             //{ key: 'pose-icon-maker', title: 'Pose icons for all characters', description: 'All characters have pose icons. Hold "SHIFT"', preview: 'previews/placeholder.png' },
         ],
     },
+    {
+        title: 'Music Packs',
+        items: [
+            { key: 'ost-pw', title: 'Phoenix Wright: Ace attorney', description: '' },
+            { key: 'ost-jfa', title: 'Justice for All', description: '' },
+            { key: 'ost-t&t', title: 'Trials and Tribulations', description: '' },
+            { key: 'ost-aj', title: 'Apollo Justice: Ace attorney', description: '' },
+            { key: 'ost-dd', title: 'Dual Destinies', description: '' },
+            { key: 'ost-soj', title: 'Spirit of Justice', description: '' },
+            { key: 'ost-tgaa1', title: 'The Great Ace Attorney: Adventures', description: '' },
+            { key: 'ost-tgaa2', title: 'The Great Ace Attorney: Resolve', description: '' },
+            { key: 'ost-aai1', title: 'Ace Attorney Investigations: Miles Edgeworth', description: '' },
+            { key: 'ost-aai2', title: 'Ace Attorney Investigations 2: Prosecutor\'s Path', description: '' },
+            { key: 'ost-pl', title: 'Professor Layton vs. Phoenix Wright: Ace Attorney', description: '' },
+        ],
+    },
 ];
 
 function optionSet(key, value) {
